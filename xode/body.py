@@ -7,7 +7,7 @@ XODE Body and Mass Parser
 """
 
 import ode
-import parser, node, joint, transform
+import errors, node, joint, transform, geom
 
 class Body(node.TreeNode):
     """
@@ -21,8 +21,8 @@ class Body(node.TreeNode):
 
         enabled = attrs.get('enabled', 'true')
         if (enabled not in ['true', 'false']):
-            raise parser.InvalidError("Enabled attribute must be either 'true' or " \
-                               "'false'.")
+            raise errors.InvalidError("Enabled attribute must be either 'true'"\
+                                      " or 'false'.")
         else:
             if (enabled == 'false'):
                 self.getODEObject().disable()
@@ -76,11 +76,11 @@ class Body(node.TreeNode):
                         float(attrs['yaxis']),
                         float(attrs['zaxis']))
             except KeyError:
-                raise parser.InvalidError('finiteRotation element must have' \
+                raise errors.InvalidError('finiteRotation element must have' \
                                           ' xaxis, yaxis and zaxis attributes')
 
             if (mode not in [0, 1]):
-                raise parser.InvalidError('finiteRotation mode attribute must' \
+                raise errors.InvalidError('finiteRotation mode attribute must' \
                                           ' be either 0 or 1.')
             
             self.getODEObject().setFiniteRotationMode(mode)
@@ -95,6 +95,16 @@ class Body(node.TreeNode):
         elif (name == 'joint'):
             j = joint.Joint(nodeName, self)
             j.takeParser(self._parser)
+        elif (name == 'body'):
+            b = Body(nodeName, self, attrs)
+            b.takeParser(self._parser)
+        elif (name == 'geom'):
+            g = geom.Geom(nodeName, self)
+            g.takeParser(self._parser)
+        elif (name == 'transform'): # so it doesn't raise ChildError
+            pass
+        else:
+            raise errors.ChildError('body', name)
 
     def _endElement(self, name):
         if (name == 'body'):
@@ -145,8 +155,7 @@ class Mass(node.TreeNode):
             mass = Mass(nodeName, self)
             mass.takeParser(self._parser)
         else:
-            raise parser.InvalidError('%s is not a valid child of <mass>' %
-                                      repr(name))
+            raise errors.ChildError('mass', name)
 
     def _endElement(self, name):
         if (name == 'mass'):

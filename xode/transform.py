@@ -23,6 +23,7 @@ class Transform:
                   [0, 0, 0, 0],
                   [0, 0, 0, 0]]
         self.setIdentity()
+        self._absolute = False
 
     def takeParser(self, parser, node, attrs):
         """
@@ -40,6 +41,11 @@ class Transform:
         """
         
         self._scale = float(attrs.get('scale', 1.0))
+        self._absolute = (attrs.get('absolute', 'false') == 'true')
+        
+        self._position = None
+        self._euler = None
+        
         self._node = node
         self._parser = parser
         self._parser.push(startElement=self._startElement,
@@ -47,14 +53,13 @@ class Transform:
 
     def _startElement(self, name, attrs):
         if (name == 'matrix4f'):
-            self.setIdentity()
             for r in range(4):
                 for c in range(4):
                     self.m[r][c] = float(attrs['m%i%i' % (r, c)])
         elif (name == 'position'):
-            self.translate(float(attrs['x']),
-                           float(attrs['y']),
-                           float(attrs['z']))
+            self._position = (float(attrs['x']),
+                              float(attrs['y']),
+                              float(attrs['z']))
         elif (name == 'euler'):
             coeff = 1
             if (attrs.get('aformat', 'radians') == 'degrees'):
@@ -63,14 +68,37 @@ class Transform:
             x = coeff * float(attrs['x'])
             y = coeff * float(attrs['y'])
             z = coeff * float(attrs['z'])
-            
-            self.rotate(x, y, z)
+
+            self._euler = (x, y, z)
+        elif (name == 'rotation'):
+            pass
+        else:
+            import parser
+            raise parser.InvalidError("%s is not a valid child of <transform>."%
+                               repr(name))
 
     def _endElement(self, name):
         if (name == 'transform'):
+            if (self._euler):
+                x, y, z = self._euler
+                self.rotate(x, y, z)
+            if (self._position):
+                x, y, z = self._position
+                self.translate(x, y, z)
+            
             self.scale(self._scale, self._scale, self._scale)
+            
             self._node.setNodeTransform(self)
             self._parser.pop()
+
+    def isAbsolute(self):
+        """
+        @return: True if this transform is to be absolute rather than
+        relative to another.
+        @rtype: bool
+        """
+
+        return self._absolute
 
     def setIdentity(self):
         """
@@ -141,7 +169,7 @@ class Transform:
         @param z: Rotation around the z axis in radians.
         @type z: float
         """
-        
+
         rx = Transform()
         rx.m[1][1] = math.cos(x)
         rx.m[1][2] = math.sin(x)
@@ -149,10 +177,10 @@ class Transform:
         rx.m[2][2] = math.cos(x)
 
         ry = Transform()
-        ry.m[0][0] = math.cos(x)
-        ry.m[0][2] = -math.sin(x)
-        ry.m[2][0] = math.sin(x)
-        ry.m[2][2] = math.cos(x)
+        ry.m[0][0] = math.cos(y)
+        ry.m[0][2] = -math.sin(y)
+        ry.m[2][0] = math.sin(y)
+        ry.m[2][2] = math.cos(y)
 
         rz = Transform()
         rz.m[0][0] = math.cos(z)
@@ -160,7 +188,7 @@ class Transform:
         rz.m[1][0] = -math.sin(z)
         rz.m[1][1] = math.cos(z)
 
-        r = self * rz * ry * rz
+        r = self * rx * ry * rz
         self.m = r.m
 
     def getPosition(self):

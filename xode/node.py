@@ -96,8 +96,17 @@ class TreeNode:
 
         return self._transform
 
-    def getTransform(self):
+    def getTransform(self, untilAncestor=None):
         """
+        Calculates the absolute transform at this node. It calculates the
+        transforms recursively from the root node. If C{untilAncestor} is
+        passed, the transform is calculated relative to it. If C{untilAncestor}
+        is passed but is not an ancestor of this node, the transform is
+        calculated from the root node as if C{None} was passed.
+
+        @param untilAncestor: The ancestor to calculate the transform from.
+        @type untilAncestor: instance of L{TreeNode}
+        
         @return: The absolute transform at this node.
         @rtype: instance of L{transform.Transform}
         """
@@ -105,10 +114,10 @@ class TreeNode:
         p = self.getParent()
         t = self.getNodeTransform()
 
-        if (p is not None):
-            return p.getTransform() * t
-        else:
+        if ((p is None) or (t.isAbsolute()) or (p is untilAncestor)):
             return t
+        else:
+            return p.getTransform(untilAncestor) * t
 
     def getName(self):
         """

@@ -52,12 +52,7 @@ tree::
 
 import ode
 import xml.parsers.expat
-import transform, node, body, joint
-
-class InvalidError(Exception):
-    """
-    Raised when an XODE document is invalid.
-    """
+import errors, transform, node, body, joint, geom
 
 class Parser:
     """
@@ -99,7 +94,7 @@ class Parser:
             self._root = Root(None, None)
             self._root.takeParser(self)
         else:
-            raise InvalidError('Root element must be <xode>.')
+            raise errors.InvalidError('Root element must be <xode>.')
 
     def parseVector(self, attrs):
         """
@@ -108,16 +103,16 @@ class Parser:
         @return: The vector (x, y, z).
         @rtype: tuple
 
-        @raise InvalidError: If the attributes don't correspond to a valid
-        vector.
+        @raise errors.InvalidError: If the attributes don't correspond to a
+        valid vector.
         """
         
         try:
             vec = float(attrs['x']), float(attrs['y']), float(attrs['z'])
         except ValueError:
-            raise InvalidError('Vector attributes must be numbers.')
+            raise errors.InvalidError('Vector attributes must be numbers.')
         except KeyError:
-            raise InvalidError('Vector must have x, y and z attributes.')
+            raise errors.InvalidError('Vector must have x, y and z attributes.')
         else:
             return vec
 
@@ -131,7 +126,7 @@ class Parser:
         @return: The root container.
         @rtype: instance of L{node.TreeNode}
 
-        @raise InvalidException: If document is invalid.
+        @raise errors.InvalidError: If document is invalid.
         """
 
         self._create().Parse(xml, 1)
@@ -147,7 +142,7 @@ class Parser:
         @return: The root container.
         @rtype: instance of L{node.TreeNode}
 
-        @raise InvalidException: If document is invalid.
+        @raise errors.InvalidError: If document is invalid.
         """
 
         self._create().ParseFile(fp)
@@ -180,8 +175,7 @@ class Root(node.TreeNode):
         elif (name == 'ext'):
             pass
         else:
-            raise InvalidError('%s is not a valid child of <xode>.' %
-                               repr(name))
+            raise errors.ChildError('xode', name)
 
     def _endElement(self, name):
         if (name == 'xode'):
@@ -221,8 +215,7 @@ class World(node.TreeNode):
         elif (name == 'ext'):
             pass
         else:
-            raise InvalidError('%s is not a valid child of <world>' %
-                               repr(name))
+            raise errors.ChildError('world', name)
 
     def _endElement(self, name):
         if (name == 'world'):
@@ -257,8 +250,8 @@ class Space(node.TreeNode):
             t = transform.Transform()
             t.takeParser(self._parser, self, attrs)
         elif (name == 'geom'):
-            # parse geom
-            pass
+            g = geom.Geom(nodeName, self)
+            g.takeParser(self._parser)
         elif (name == 'group'):
             # parse group
             pass
@@ -275,8 +268,7 @@ class Space(node.TreeNode):
             # parse ext
             pass
         else:
-            raise InvalidError('%s is not a valid child of <space>.' %
-                               repr(name))
+            raise errors.ChildError('space', name)
 
     def _endElement(self, name):
         if (name == 'space'):

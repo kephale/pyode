@@ -7,7 +7,7 @@ XODE Joint Parser
 """
 
 import ode
-import node, parser
+import node, errors
 
 class Joint(node.TreeNode):
     """
@@ -40,11 +40,11 @@ class Joint(node.TreeNode):
         try:
             link = root.namedChild(name).getODEObject()
         except KeyError:
-            raise parser.InvalidError('Joint link must reference an already '\
-                               'parsed body.')
+            raise errors.InvalidError('Joint link must reference an already '\
+                                      'parsed body.')
 
         if (not isinstance(link, ode.Body)):
-            raise parser.InvalidError('Joint link must reference a body.')
+            raise errors.InvalidError('Joint link must reference a body.')
 
         return link
 
@@ -63,7 +63,7 @@ class Joint(node.TreeNode):
             link2 = body
 
         if (link1 is link2):
-            raise parser.InvalidError('Joint requires two objects.')
+            raise errors.InvalidError('Joint requires two objects.')
 
         return link1, link2
 
@@ -100,13 +100,12 @@ class Joint(node.TreeNode):
         elif (name == 'universal'):
             pass
         else:
-            raise parser.InvalidError('%s is not a valid child of <joint>.' %
-                               repr(name))
+            raise errors.ChildError('joint', name)
 
     def _endElement(self, name):
         if (name == 'joint'):
             if (self.getODEObject() is None):
-                raise parser.InvalidError('No joint type element found.')
+                raise errors.InvalidError('No joint type element found.')
             self._parser.pop()
 
     def _parseBallJoint(self, world, link1, link2):
@@ -116,8 +115,7 @@ class Joint(node.TreeNode):
             if (name == 'anchor'):
                 anchor[0] = self._parser.parseVector(attrs)
             else:
-                raise parser.InvalidError('%s is not a valid child of <ball>.' %
-                                   repr(name))
+                raise errors.ChildError('ball', name)
     
         def end(name):
             if (name == 'ball'):

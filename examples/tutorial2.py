@@ -6,7 +6,7 @@ from pygame.locals import *
 import ode
 import xode.parser
 
-doc = '''<?xml version="1.0"?>
+doc = '''<?xml version="1.0" encoding="iso-8859-1"?>
 <xode>
   <world name="world">
     <space>

@@ -2,7 +2,8 @@
 
 import unittest
 import ode
-from xode import node, transform, parser
+import math
+from xode import node, transform, parser, errors
 
 test_doc = '''<?xml version="1.0"?>
 <xode>
@@ -49,6 +50,10 @@ test_doc = '''<?xml version="1.0"?>
             <anchor x="1.0" y="2.0" z="3.0"/>
           </ball>
         </joint>
+
+        <geom name="geom1">
+          <box sizex="10" sizey="20" sizez="30"/>
+        </geom>
       </body>
 
       <body name="body2">
@@ -71,15 +76,92 @@ test_doc = '''<?xml version="1.0"?>
     <space>
     <body name="body3">
       <transform>
-        <matrix4f m00="0.0" m01="0.0" m02="1.0" m03="0.0"
+        <matrix4f m00="1.0" m01="0.0" m02="0.0" m03="0.0"
                   m10="0.0" m11="1.0" m12="0.0" m13="0.0"
-                  m20="1.0" m21="0.0" m22="0.0" m23="0.0"
+                  m20="0.0" m21="0.0" m22="1.0" m23="0.0"
                   m30="10.0" m31="20.0" m32="30.0" m33="0.0"/>
       </transform>
     </body>
+
+    <body name="body4">
+      <transform>
+        <position x="1" y="1" z="1"/>
+      </transform>
+      <body name="body5">
+        <transform>
+          <position x="2" y="2" z="2"/>
+        </transform>
+      </body>
+    </body>
+
+    <body name="body6">
+      <transform>
+        <rotation>
+          <euler x="0" y="0" z="0.78" aformat="radians"/>
+        </rotation>
+      </transform>
+
+      <body name="body7">
+        <transform absolute="true">
+          <matrix4f m00="1.0" m01="2.0" m02="3.0" m03="4.0"
+                    m10="1.2" m11="2.2" m12="3.2" m13="4.2"
+                    m20="1.4" m21="2.4" m22="3.4" m23="4.4"
+                    m30="1.8" m31="2.8" m32="3.8" m33="4.8"/>
+        </transform>
+
+        <geom name="geom6">
+          <transform>
+            <position x="1.0" y="2.0" z="3.0"/>
+            <rotation>
+              <euler x="0.78" y="0" z="0" aformat="radians"/>
+            </rotation>
+          </transform>
+          <sphere radius="1.0"/>
+        </geom>
+        
+      </body>
+    </body>
+
+    <geom name="geom2">
+      <cappedCylinder radius="15.0" length="3.0"/>
+    </geom>
+
+    <geom name="geom3">
+      <ray length="11.0"/>
+      
+      <geom name="geom4">
+        <plane a="0.0" b="1.0" c="0.0" d="17.0"/>
+      </geom>
+
+      <geom name="geom5">
+        <transform>
+          <position x="1.0" y="2.0" z="3.0"/>
+          <rotation>
+            <euler x="0.0" y="0.0" z="0.78" aformat="radians"/>
+          </rotation>
+        </transform>
+
+        <sphere radius="23.0"/>
+      </geom>
+      
+    </geom>
+    
     </space>
   </world>
+
 </xode>'''
+
+def feq(n1, n2, error=0.1):
+    """
+    Compare two floating point numbers. If the differ by less than C{error},
+    return True; otherwise, return False.
+    """
+
+    n = math.fabs(n1 - n2)
+    if (n <= error):
+        return True
+    else:
+        return False
 
 class Class1:
     pass
@@ -93,6 +175,7 @@ class TestTreeNode(unittest.TestCase):
         self.node1 = node.TreeNode('node1', None)
         self.node2 = node.TreeNode('node2', self.node1)
         self.node3 = node.TreeNode('node3', self.node2)
+        self.node4 = node.TreeNode('node4', self.node3)
 
         self.t2 = transform.Transform()
         self.t2.scale(2.0, 3.0, 4.0)
@@ -101,6 +184,10 @@ class TestTreeNode(unittest.TestCase):
         self.t3 = transform.Transform()
         self.t3.rotate(1.0, 2.0, 3.0)
         self.node3.setNodeTransform(self.t3)
+
+        self.t4 = transform.Transform()
+        self.t4.translate(2.0, 3.0, 1.0)
+        self.node4.setNodeTransform(self.t4)
 
         self.node1.setODEObject(Class2())
         self.node2.setODEObject(Class2())
@@ -115,7 +202,8 @@ class TestTreeNode(unittest.TestCase):
     def testGetChildren(self):
         self.assertEqual(self.node1.getChildren(), [self.node2])
         self.assertEqual(self.node2.getChildren(), [self.node3])
-        self.assertEqual(self.node3.getChildren(), [])
+        self.assertEqual(self.node3.getChildren(), [self.node4])
+        self.assertEqual(self.node4.getChildren(), [])
 
     def testNamedChildLocal(self):
         self.assertEqual(self.node1.namedChild('node2'), self.node2)
@@ -142,6 +230,10 @@ class TestTreeNode(unittest.TestCase):
         ref = self.node1.getNodeTransform() * self.t2 * self.t3
         self.assertEqual(self.node3.getTransform().m, ref.m)
 
+    def testGetTransformUntil(self):
+        ref = self.t3 * self.t4
+        self.assertEqual(self.node4.getTransform(self.node2).m, ref.m)
+
 class TestParser(unittest.TestCase):
     def setUp(self):
         self.p = parser.Parser()
@@ -162,16 +254,18 @@ class TestBodyParser(TestParser):
         TestParser.setUp(self)
         self.body1 = self.root.namedChild('body1').getODEObject()
         self.body3 = self.root.namedChild('body3').getODEObject()
+        self.body6 = self.root.namedChild('body6').getODEObject()
         
     def testInstance(self):
         self.assert_(isinstance(self.body1, ode.Body))
 
     def testRotation(self):
-        # FIXME?
-        #self.assertEqual(self.body3.getRotation(), [0.0, 0.0, 1.0,
-        #                                            0.0, 1.0, 0.0,
-        #                                            1.0, 0.0, 0.0])
-        pass
+        ref = transform.Transform()
+        ref.rotate(0.0, 0.0, 0.78)
+
+        rot = self.body6.getRotation()
+        for n1, n2 in zip(ref.getRotation(), rot):
+            self.assert_(feq(n1, n2))
 
     def testPosition(self):
         self.assertEqual(self.body3.getPosition(), (10.0, 20.0, 30.0))
@@ -253,15 +347,94 @@ class TestJointParser(TestParser):
         self.assertEqual(self.joint3.getBody(1), self.body2)
 
     def testBallAnchor(self):
-        # FIXME?
-        #self.assertEqual(self.joint1.getAnchor(), (1.0, 2.0, 3.0))
-        pass
+        for n1, n2 in zip(self.joint1.getAnchor(), (1.0, 2.0, 3.0)):
+            self.assert_(feq(n1, n2))
+
+class TestGeomParser(TestParser):
+    def setUp(self):
+        TestParser.setUp(self)
+        
+        self.geom1 = self.root.namedChild('geom1').getODEObject()
+        self.geom2 = self.root.namedChild('geom2').getODEObject()
+        self.geom3 = self.root.namedChild('geom3').getODEObject()
+        self.geom4 = self.root.namedChild('geom4').getODEObject()
+        self.geom5 = self.root.namedChild('geom5').getODEObject()
+        self.geom6 = self.root.namedChild('geom6').getODEObject()
+        
+        self.body1 = self.root.namedChild('body1').getODEObject()
+        self.space1 = self.root.namedChild('space1').getODEObject()
+
+    def testSpaceAncestor(self):
+        self.assertEqual(self.geom1.getSpace(), self.space1)
+
+    def testBodyAttach(self):
+        self.assertEqual(self.geom1.getBody(), self.body1)
+
+    def testBoxInstance(self):
+        self.assert_(isinstance(self.geom1, ode.GeomBox))
+
+    def testBoxSize(self):
+        self.assertEqual(self.geom1.getLengths(), (10.0, 20.0, 30.0))
+
+    def testCCylinderInstance(self):
+        self.assert_(isinstance(self.geom2, ode.GeomCCylinder))
+
+    def testCCylinderParams(self):
+        self.assertEqual(self.geom2.getParams(), (15.0, 3.0))
+
+    def testSphereInstance(self):
+        self.assert_(isinstance(self.geom5, ode.GeomSphere))
+
+    def testSphereRadius(self):
+        self.assertEqual(self.geom5.getRadius(), 23.0)
+
+    def testPlaneInstance(self):
+        self.assert_(isinstance(self.geom4, ode.GeomPlane))
+
+    def testPlaneParams(self):
+        self.assertEqual(self.geom4.getParams(), ((0.0, 1.0, 0.0), 17.0))
+
+    def testRayInstance(self):
+        self.assert_(isinstance(self.geom3, ode.GeomRay))
+
+    def testRayLength(self):
+        self.assertEqual(self.geom3.getLength(), 11.0)
+
+    def testIndependantRotation(self):
+        ref = transform.Transform()
+        ref.rotate(0.0, 0.0, 0.78)
+
+        for n1, n2 in zip(self.geom5.getRotation(), ref.getRotation()):
+            self.assert_(feq(n1, n2))
+
+    def testIndependantPosition(self):
+        self.assertEqual(self.geom5.getPosition(), (1.0, 2.0, 3.0))
+
+    def testTransformInstance(self):
+        self.assert_(isinstance(self.geom6, ode.GeomTransform))
+
+    def testTransformGeomInstance(self):
+        self.assert_(isinstance(self.geom6.getGeom(), ode.GeomSphere))
+
+    def testTransformPosition(self):
+        pos = self.geom6.getGeom().getPosition()
+        self.assertEqual(pos, (1.0, 2.0, 3.0))
+
+    def testTransformRotation(self):
+        ref = transform.Transform()
+        ref.rotate(0.78, 0.0, 0.0)
+        rot = self.geom6.getGeom().getRotation()
+
+        for n1, n2 in zip(rot, ref.getRotation()):
+            self.assert_(feq(n1, n2))
 
 class TestTransformParser(TestParser):
     def setUp(self):
         TestParser.setUp(self)
         self.world1 = self.root.namedChild('world1')
         self.body1 = self.root.namedChild('body1')
+        self.body5 = self.root.namedChild('body5')
+        self.body7 = self.root.namedChild('body7')
 
     def testMatrixStyle(self):
         t = self.world1.getNodeTransform()
@@ -272,10 +445,27 @@ class TestTransformParser(TestParser):
 
     def testVector(self):
         ref = transform.Transform()
-        ref.translate(10.0, 11.0, 12.0)
         ref.rotate(45.0, 45.0, 45.0)
+        ref.translate(10.0, 11.0, 12.0)
         ref.scale(2.0, 2.0, 2.0)
         self.assertEqual(self.body1.getNodeTransform().m, ref.m)
+
+    def testAbsolute(self):
+        t = self.body7.getTransform()
+        self.assertEqual(t.m, [[1.0, 2.0, 3.0, 4.0],
+                               [1.2, 2.2, 3.2, 4.2],
+                               [1.4, 2.4, 3.4, 4.4],
+                               [1.8, 2.8, 3.8, 4.8]])
+
+    def testRelative(self):
+        t1 = transform.Transform()
+        t1.translate(1.0, 1.0, 1.0)
+        t2 = transform.Transform()
+        t2.translate(2.0, 2.0, 2.0)
+
+        t3 = t1 * t2
+
+        self.assertEqual(self.body5.getTransform().m, t3.m)
         
     def testMultiply(self):
         t1 = transform.Transform()
@@ -305,11 +495,11 @@ class TestInvalid(unittest.TestCase):
 
 class TestInvalidTags(TestInvalid):
     def testRoot(self):
-        self.assertRaises(parser.InvalidError, self.p.parseString,
+        self.assertRaises(errors.InvalidError, self.p.parseString,
                           '<?xml version="1.0"?>\n<test></test>')
         
     def testRootChild(self):
-        self.assertRaises(parser.InvalidError, self.p.parseString,
+        self.assertRaises(errors.ChildError, self.p.parseString,
                           '<?xml version="1.0"?>\n<xode><test/></xode>')
 
     def testWorldChild(self):
@@ -318,7 +508,7 @@ class TestInvalidTags(TestInvalid):
           <test/>
         </world></xode>'''
 
-        self.assertRaises(parser.InvalidError, self.p.parseString, doc)
+        self.assertRaises(errors.ChildError, self.p.parseString, doc)
 
     def testSpaceChild(self):
         doc = '''<?xml version="1.0"?>
@@ -326,7 +516,7 @@ class TestInvalidTags(TestInvalid):
           <test/>
         </space></world></xode>'''
 
-        self.assertRaises(parser.InvalidError, self.p.parseString, doc)
+        self.assertRaises(errors.ChildError, self.p.parseString, doc)
 
     def testMassChild(self):
         doc = '''<?xml version="1.0"?>
@@ -338,12 +528,17 @@ class TestInvalidTags(TestInvalid):
           </body>
         </space></world></xode>'''
 
-        self.assertRaises(parser.InvalidError, self.p.parseString, doc)
+        self.assertRaises(errors.ChildError, self.p.parseString, doc)
 
     def testJointChild(self):
         doc = '''<?xml version="1.0"?>
         <xode><world><space><joint><test/></joint></space></world></xode>'''
-        self.assertRaises(parser.InvalidError, self.p.parseString, doc)
+        self.assertRaises(errors.ChildError, self.p.parseString, doc)
+
+    def testGeomChild(self):
+        doc = '''<?xml version="1.0"?>
+        <xode><world><space><geom><test/></geom></space></world></xode>'''
+        self.assertRaises(errors.ChildError, self.p.parseString, doc)
 
 class TestInvalidBody(TestInvalid):
     def testBadVector(self):
@@ -354,7 +549,7 @@ class TestInvalidBody(TestInvalid):
           </body>
         </world></xode>'''
         
-        self.assertRaises(parser.InvalidError, self.p.parseString, doc)
+        self.assertRaises(errors.InvalidError, self.p.parseString, doc)
 
     def testBodyEnable(self):
         doc = '''<?xml version="1.0"?>
@@ -363,7 +558,7 @@ class TestInvalidBody(TestInvalid):
           </body>
         </world></xode>'''
         
-        self.assertRaises(parser.InvalidError, self.p.parseString, doc)
+        self.assertRaises(errors.InvalidError, self.p.parseString, doc)
 
     def testFiniteRotationMode(self):
         doc = '''<?xml version="1.0"?>
@@ -373,7 +568,7 @@ class TestInvalidBody(TestInvalid):
           </body>
         </world></xode>'''
         
-        self.assertRaises(parser.InvalidError, self.p.parseString, doc)
+        self.assertRaises(errors.InvalidError, self.p.parseString, doc)
 
     def testFiniteRotationAxes(self):
         doc = '''<?xml version="1.0"?>
@@ -383,7 +578,7 @@ class TestInvalidBody(TestInvalid):
           </body>
         </world></xode>'''
         
-        self.assertRaises(parser.InvalidError, self.p.parseString, doc)
+        self.assertRaises(errors.InvalidError, self.p.parseString, doc)
 
 class TestInvalidJoint(TestInvalid):
     def testEqualLinks(self):
@@ -395,7 +590,7 @@ class TestInvalidJoint(TestInvalid):
         </space></world></xode>'''
         
         # both links are ode.environment
-        self.assertRaises(parser.InvalidError, self.p.parseString, doc)
+        self.assertRaises(errors.InvalidError, self.p.parseString, doc)
 
     def testNoType(self):
         doc = '''<?xml version="1.0"?>
@@ -403,7 +598,7 @@ class TestInvalidJoint(TestInvalid):
           <joint/>
         </space></world></xode>'''
 
-        self.assertRaises(parser.InvalidError, self.p.parseString, doc)
+        self.assertRaises(errors.InvalidError, self.p.parseString, doc)
 
     def testWrongType(self):
         doc = '''<?xml version="1.0"?>
@@ -416,7 +611,7 @@ class TestInvalidJoint(TestInvalid):
           </joint>
         </space></world></xode>'''
 
-        self.assertRaises(parser.InvalidError, self.p.parseString, doc)
+        self.assertRaises(errors.InvalidError, self.p.parseString, doc)
 
     def testMisplacedReference(self):
         doc = '''<?xml version="1.0"?>
@@ -431,7 +626,16 @@ class TestInvalidJoint(TestInvalid):
         </space></world></xode>'''
         # bodies must be defined before the joint
 
-        self.assertRaises(parser.InvalidError, self.p.parseString, doc)
+        self.assertRaises(errors.InvalidError, self.p.parseString, doc)
+
+class TestInvalidGeom(TestInvalid):
+    def testNoType(self):
+        doc = '''<?xml version="1.0"?>
+        <xode><world><space>
+          <geom/>
+        </space></world></xode>'''
+
+        self.assertRaises(errors.InvalidError, self.p.parseString, doc)
         
 if (__name__ == '__main__'):
     unittest.main()
