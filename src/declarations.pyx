@@ -38,6 +38,8 @@ cdef extern from "ode/ode.h":
         int _dummy
     cdef struct dxJointGroup:
         int _dummy
+    cdef struct dxTriMeshData:
+        int _dummy
 
     # Types
     ctypedef dxWorld* dWorldID
@@ -46,6 +48,7 @@ cdef extern from "ode/ode.h":
     ctypedef dxGeom* dGeomID
     ctypedef dxJoint* dJointID
     ctypedef dxJointGroup* dJointGroupID
+    ctypedef dxTriMeshData* dTriMeshDataID
     ctypedef dReal dVector3[4]
     ctypedef dReal dVector4[4]
     ctypedef dReal dMatrix3[4*3]
@@ -346,3 +349,32 @@ cdef extern from "ode/ode.h":
 
     int dCollide (dGeomID o1, dGeomID o2, int flags, dContactGeom *contact, int skip)
 
+    # Trimesh
+    dTriMeshDataID dGeomTriMeshDataCreate()
+    void dGeomTriMeshDataDestroy(dTriMeshDataID g)
+    void dGeomTriMeshDataBuildSingle (dTriMeshDataID g, void* Vertices,
+                                int VertexStride, int VertexCount,
+                                void* Indices, int IndexCount,
+                                int TriStride, void* Normals)
+    
+    void dGeomTriMeshDataBuildSimple(dTriMeshDataID g,
+                                 dReal* Vertices, int VertexCount,
+                                 int* Indices, int IndexCount)
+
+    dGeomID dCreateTriMesh (dSpaceID space, dTriMeshDataID Data,
+                            void* Callback,
+                            void* ArrayCallback,
+                            void* RayCallback)   
+
+    void dGeomTriMeshSetData (dGeomID g, dTriMeshDataID Data)
+    
+    void dGeomTriMeshClearTCCache (dGeomID g)
+
+    void dGeomTriMeshGetTriangle (dGeomID g, int Index, dVector3 *v0,
+                                  dVector3 *v1, dVector3 *v2)
+
+    void dGeomTriMeshGetPoint (dGeomID g, int Index, dReal u, dReal v,
+                               dVector3 Out)
+
+    void dGeomTriMeshEnableTC(dGeomID g, int geomClass, int enable)
+    int dGeomTriMeshIsTCEnabled(dGeomID g, int geomClass)
