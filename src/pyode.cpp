@@ -28,5 +28,6 @@ BOOST_PYTHON_MODULE(pyode)
 	exportRayGeom();
 
 	exportMain();
+	exportCollision();
 }
 

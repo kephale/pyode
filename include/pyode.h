@@ -31,4 +31,5 @@ using namespace boost::python;
 #include "raygeom.h"
 
 #include "main.h"
+#include "collision.h"
 

@@ -8,7 +8,7 @@ pyode_so_SOURCES = mass.cpp world.cpp body.cpp joint.cpp jointgroup.cpp \
 		   hinge2joint.cpp amotorjoint.cpp main.cpp util.cpp \
 		   pyode.cpp geom.cpp contactgeom.cpp space.cpp \
 		   spheregeom.cpp boxgeom.cpp planegeom.cpp \
-		   ccylindergeom.cpp raygeom.cpp
+		   ccylindergeom.cpp raygeom.cpp collision.cpp
 
 pyode_so_LDFLAGS = -shared
 pyode_so_LDADD = $(BOOST_LIBS) $(PYTHON_LIBS) -lode
