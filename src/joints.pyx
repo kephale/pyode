@@ -1,6 +1,6 @@
 # joints
 
-# For every joint type there is a separate class that wraps this joint.
+# For every joint type there is a separate class that wraps that joint.
 # These classes are derived from the base class "Joint" that contains
 # all the common stuff (including destruction).
 # The ODE joint is created in the constructor and destroyed in the destructor.
@@ -55,7 +55,9 @@ cdef class JointGroup:
 
 ######################################################################
 
+# Joint
 cdef class Joint:
+    """Base class for all joint classes."""
 
     # Joint id as returned by dJointCreateXxx()
     cdef dJointID jid
@@ -458,5 +460,112 @@ cdef class ContactJoint(Joint):
         self.world = world
         if jointgroup!=None:
             jointgroup._addjoint(self)
+
+# AMotor
+cdef class AMotor(Joint):
+    """AMotor joint.
+    """
+
+    def __new__(self, World world not None, jointgroup=None):
+        cdef JointGroup jg
+        cdef dJointGroupID jgid
+
+        jgid = NULL
+        if jointgroup!=None:
+            jg = jointgroup
+            jgid = jg.gid
+        self.jid = dJointCreateAMotor(world.wid, jgid)
+
+    def __init__(self, World world not None, jointgroup=None):
+        self.world = world
+        if jointgroup!=None:
+            jointgroup._addjoint(self)
+            
+    # setMode
+    def setMode(self, mode):
+        """Set the angular motor mode.
+
+        mode must be either AMotorUser or AMotorEuler.
+        """
+        dJointSetAMotorMode(self.jid, mode)
+
+    # getMode
+    def getMode(self):
+        """Return the angular motor mode.
+
+        Returns AMotorUser or AMotorEuler.
+        """
+        return dJointGetAMotorMode(self.jid)
+
+    # setNumAxes
+    def setNumAxes(self, int num):
+        """Set the number of angular axes that will be controlled by the AMotor.
+
+        num may be in the range from 0 to 3.
+        """
+        dJointSetAMotorNumAxes(self.jid, num)
+
+    # getNumAxes
+    def getNumAxes(self):
+        """Get the number of angular axes that are controlled by the AMotor."""
+        return dJointGetAMotorNumAxes(self.jid)
+
+    # setAxis
+    def setAxis(self, int anum, int rel, axis):
+        """Set an AMotor axis.
+
+        The anum argument selects the axis to change (0,1 or 2).
+        Each axis can have one of three "relative orientation" modes,
+        selected by rel:
+        
+        0: The axis is anchored to the global frame. 
+        1: The axis is anchored to the first body. 
+        2: The axis is anchored to the second body.
+
+        The axis vector is always specified in global coordinates
+        regardless of the setting of rel.
+        """
+        dJointSetAMotorAxis(self.jid, anum, rel, axis[0], axis[1], axis[2])
+
+    # getAxis
+    def getAxis(self, int anum):
+        """Get an AMotor axis.
+
+        anum is the index of the axis (0-2).
+        """
+        cdef dVector3 a
+        dJointGetAMotorAxis(self.jid, anum, a)
+        return (a[0],a[1],a[2])
+
+    # getAxisRel
+    def getAxisRel(self, int anum):
+        """Get the relative mode of an axis.
+
+        anum is the index of the axis (0-2).
+        """
+        return dJointGetAMotorAxisRel(self.jid, anum)
+
+    # setAngle
+    def setAngle(self, int anum, angle):
+        """Tell the AMotor what the current angle is along axis anum."""
+        dJointSetAMotorAngle(self.jid, anum, angle)
+
+    # getAngle
+    def getAngle(self, int anum):
+        """Return the current angle for axis anum."""
+        return dJointGetAMotorAngle(self.jid, anum)
+
+    # getAngleRate
+    def getAngleRate(self, int anum):
+        """Return the current angle rate for axis anum."""
+        return dJointGetAMotorAngleRate(self.jid, anum)
+
+    # setParam
+    def setParam(self, param, value):
+        dJointSetAMotorParam(self.jid, param, value)
+
+    # getParam
+    def getParam(self, param):
+        return dJointGetAMotorParam(self.jid, param)
 
 

@@ -51,6 +51,8 @@ cdef extern from "ode/ode.h":
     ctypedef dReal dQuaternion[4]
 
     cdef extern dReal dInfinity
+    cdef extern int dAMotorUser
+    cdef extern int dAMotorEuler
 
     ctypedef struct dMass:
         dReal    mass

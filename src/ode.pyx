@@ -110,6 +110,9 @@ ContactApprox1_1	= 0x1000
 ContactApprox1_2	= 0x2000
 ContactApprox1	= 0x3000
 
+AMotorUser = dAMotorUser
+AMotorEuler = dAMotorEuler
+
 Infinity = dInfinity
 
 ######################################################################
