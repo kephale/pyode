@@ -299,6 +299,7 @@ cdef extern from "ode/ode.h":
     void dSpaceDestroy (dSpaceID)
     void dSpaceAdd (dSpaceID, dGeomID)
     void dSpaceRemove (dSpaceID, dGeomID)
+    int dSpaceQuery (dSpaceID, dGeomID)
     void dSpaceCollide (dSpaceID space, void *data, dNearCallback *callback)
 
     void dHashSpaceSetLevels (dSpaceID space, int minlevel, int maxlevel)
@@ -307,6 +308,7 @@ cdef extern from "ode/ode.h":
     int dSpaceGetCleanup (dSpaceID space)
 
     int dSpaceGetNumGeoms (dSpaceID)
+    dGeomID dSpaceGetGeom (dSpaceID, int i)
 
     # Geom
     dGeomID dCreateSphere (dSpaceID space, dReal radius)

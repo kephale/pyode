@@ -139,6 +139,9 @@ include "body.pyx"
 # Joint classes
 include "joints.pyx"
 
+# Geom base
+include "geomobject.pyx"
+
 # Space
 include "space.pyx"
 

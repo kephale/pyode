@@ -1,5 +1,5 @@
 # Space
-cdef class Space:
+cdef class Space(GeomObject):
     """Space class (container for geometry objects).
 
     A Space object is a container for geometry objects which are used
@@ -15,7 +15,11 @@ cdef class Space:
      >>> space = Space(type=1)   # Create a HashSpace
     """
 
+    # The id of the space. Actually this is a copy of the value in self.gid
+    # (as the Space is derived from GeomObject) which can be used without
+    # casting whenever a *space* id is required.
     cdef dSpaceID sid
+    
     # Dictionary with Geomobjects. Key is the ID (geom._id()) and the value
     # is the geom object (Python wrapper). This is used in collide_callback()
 #    cdef object geom_dict
@@ -26,6 +30,9 @@ cdef class Space:
         else:
             self.sid = dHashSpaceCreate(0)
 
+        # Copy the ID
+        self.gid = <dGeomID>self.sid
+
         dSpaceSetCleanup(self.sid, 0)
         _geom_c2py_lut[<long>self.sid]=self
 
@@ -34,8 +41,10 @@ cdef class Space:
 #        self.geom_dict = {}
 
     def __dealloc__(self):
-        if self.sid!=NULL:
+        if self.gid!=NULL:
             dSpaceDestroy(self.sid)
+            self.sid = NULL
+            self.gid = NULL
 
 #    def _addgeom(self, geom):
 #        """Insert the geom object into the dictionary (internal method).
@@ -61,12 +70,64 @@ cdef class Space:
         id = <long>self.sid
         return id
 
+    def add(self, GeomObject geom):
+        """add(geom)
+
+        Add a geom to a space. This does nothing if the geom is
+        already in the space.
+
+        @param geom: Geom object to add
+        @type geom: GeomObject
+        """
+        
+        dSpaceAdd(self.sid, geom.gid)
+
+    def remove(self, GeomObject geom):
+        """remove(geom)
+
+        Remove a geom from a space.
+
+        @param geom: Geom object to remove
+        @type geom: GeomObject
+        """
+        dSpaceRemove(self.sid, geom.gid)
+
+    def query(self, GeomObject geom):
+        """query(geom) -> bool
+
+        Return True if the given geom is in the space.
+
+        @param geom: Geom object to check
+        @type geom: GeomObject
+        """
+        return dSpaceQuery(self.sid, geom.gid)
+
     def getNumGeoms(self):
         """getNumGeoms() -> int
 
         Return the number of geoms contained within the space.
         """
         return dSpaceGetNumGeoms(self.sid)
+
+    def getGeom(self, int idx):
+        """getGeom(idx) -> GeomObject
+
+        Return the geom with the given index contained within the space.
+
+        @param idx: Geom index (0,1,...,getNumGeoms()-1)
+        @type idx: int
+        """
+        cdef dGeomID gid
+
+        # Check the index
+        if idx<0 or idx>=dSpaceGetNumGeoms(self.sid):
+            raise IndexError, "geom index out of range"
+
+        gid = dSpaceGetGeom(self.sid, idx)
+        if <long>gid not in _geom_c2py_lut:
+            raise RuntimeError, "geom id cannot be translated to a Python object"
+
+        return _geom_c2py_lut[<long>gid]
 
     def collide(self, arg, callback):
         """Do collision detection.
