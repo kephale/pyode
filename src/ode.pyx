@@ -144,6 +144,10 @@ include "space.pyx"
 # Geom classes
 include "geoms.pyx"
 
+# Include the trimesh switch file that either includes the real trimesh
+# wrapper or a dummy wrapper (if trimesh support is not available/desired)
+include "_trimesh_switch.pyx"
+
     
 def collide(geom1, geom2):
     """Generate contact information for two objects.

@@ -37,3 +37,8 @@ that points to the base ODE directory. It might be possible that you have
 to modify this variable so that it points to the actual location on your
 system.
 
+ODE can either be compiled with or without trimesh support. If you disabled
+trimesh support you also have to disable it in this wrapper. You do that
+by setting the variable TRIMESH_SUPPORT to False in the setup script.
+In that case the TriMeshData and GeomTriMesh classes will still be there
+but they will raise a NotImplementedError exception in their constructor.
