@@ -56,7 +56,7 @@ cdef class Mass:
         @type I13: float
         @type I23: float
         """
-        dMassSetParameters(&self._mass, themass, cgx, cgy, cgz, I11, I22, I33, I12, I13, I23)
+        dMassSetParameters(&self._mass, mass, cgx, cgy, cgz, I11, I22, I33, I12, I13, I23)
 
     def setSphere(self, density, radius):
         """setSphere(density, radius)
