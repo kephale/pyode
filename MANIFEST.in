@@ -1,5 +1,6 @@
 include AUTHORS
 include INSTALL
+include README
 include LICENSE
 include LICENSE-BSD
 include ChangeLog
