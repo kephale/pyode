@@ -184,8 +184,8 @@ cdef class GeomObject:
         return dGeomIsSpace(self.gid)
 
     def getSpace(self):
-        """Return the space that contains the geom.
-        
+        """getSpace() -> Space
+
         Return the space that the given geometry is contained in,
         or return None if it is not contained in any space."""        
         return self.space
@@ -247,7 +247,13 @@ cdef class GeomObject:
 
 # GeomSphere
 cdef class GeomSphere(GeomObject):
-    """Sphere object.
+    """Sphere geometry.
+
+    This class represents a sphere centered at the origin.
+
+    Constructor::
+    
+      GeomSphere(space=None, radius=1.0)
     """
 
     def __new__(self, space=None, radius=1.0):
@@ -310,7 +316,13 @@ cdef class GeomSphere(GeomObject):
                 
 # GeomBox
 cdef class GeomBox(GeomObject):
-    """Box object.
+    """Box geometry.
+
+    This class represents a box centered at the origin.
+
+    Constructor::
+    
+      GeomBox(space=None, lengths=(1.0, 1.0, 1.0))
     """
 
     def __new__(self, space=None, lengths=(1.0, 1.0, 1.0)):
@@ -363,10 +375,18 @@ cdef class GeomBox(GeomObject):
 
 # GeomPlane
 cdef class GeomPlane(GeomObject):
-    """Plane object.
+    """Plane geometry.
+
+    This class represents an infinite plane. The plane equation is:
+    n.x*x + n.y*y + n.z*z = dist
 
     This object can't be attached to a body.
     If you call getBody() on this object it always returns ode.environment.
+
+    Constructor::
+    
+      GeomPlane(space=None, normal=(0,0,1), dist=0)
+
     """
 
     def __new__(self, space=None, normal=(0,0,1), dist=0):
@@ -417,7 +437,16 @@ cdef class GeomPlane(GeomObject):
 
 # GeomCCylinder
 cdef class GeomCCylinder(GeomObject):
-    """Capped cylinder object.
+    """Capped cylinder geometry.
+
+    This class represents a capped cylinder aligned along the local Z axis
+    and centered at the origin.
+
+    Constructor::
+    
+      GeomCCylinder(space=None, radius=0.5, length=1.0)
+
+    The length parameter does not include the caps.
     """
 
     def __new__(self, space=None, radius=0.5, length=1.0):
@@ -471,6 +500,16 @@ cdef class GeomCCylinder(GeomObject):
 # GeomRay
 cdef class GeomRay(GeomObject):
     """Ray object.
+
+    A ray is different from all the other geom classes in that it does
+    not represent a solid object. It is an infinitely thin line that
+    starts from the geom's position and extends in the direction of
+    the geom's local Z-axis.
+
+    Constructor::
+    
+      GeomRay(space=None, rlen=1.0)
+    
     """
 
     def __new__(self, space=None, rlen=1.0):
@@ -520,6 +559,10 @@ cdef class GeomTransform(GeomObject):
     A geometry transform "T" is a geom that encapsulates another geom
     "E", allowing E to be positioned and rotated arbitrarily with
     respect to its point of reference.
+
+    Constructor::
+    
+      GeomTransform(space=None)    
     """
 
     cdef object geom
@@ -630,6 +673,10 @@ cdef class GeomTriMesh(GeomObject):
     To construct the trimesh geom you need a TriMeshData object that
     stores the actual mesh. This object has to be passed as first
     argument to the constructor.
+
+    Constructor::
+    
+      GeomTriMesh(data, space=None)    
     """
 
     # Keep a reference to the data
