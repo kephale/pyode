@@ -72,7 +72,7 @@ cdef class Mass:
         dMassSetSphere(&self._mass, density, radius)
 
     def setCappedCylinder(self, density, direction, r, h):
-        """setCappedCylinder(density, direction, a, b)
+        """setCappedCylinder(density, direction, r, h)
         
         Set the mass parameters to represent a capped cylinder of the
         given parameters and density, with the center of mass at
