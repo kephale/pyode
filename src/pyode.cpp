@@ -9,6 +9,7 @@ BOOST_PYTHON_MODULE(pyode)
 	exportJointGroup();
 
 	exportGeom();
+	exportSpace();
 	exportContactGeom();
 	
 	exportAMotorJoint();

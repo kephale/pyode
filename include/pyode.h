@@ -12,6 +12,7 @@ using namespace boost::python;
 #include "jointgroup.h"
 
 #include "geom.h"
+#include "space.h"
 #include "contactgeom.h"
 
 #include "balljoint.h"
