@@ -556,14 +556,25 @@ cdef class GeomTransform(GeomObject):
         id = <long>self.gid
         return id
 
-    def setGeom(self, geom):
+    def setGeom(self, GeomObject geom not None):
         """setGeom(geom)
 
-        Set the geom that the geometry transform encapsulates. The geom must
-        not be inserted into any space, and must not be associated with any
-        body.
+        Set the geom that the geometry transform encapsulates.
+        A ValueError exception is thrown if a) the geom is not placeable,
+        b) the geom was already inserted into a space or c) the geom is
+        already associated with a body.
+
+        @param geom: Geom object to encapsulate
+        @type geom: GeomObject
         """
         cdef long id
+
+        if not geom.placeable():
+            raise ValueError, "Only placeable geoms can be encapsulated by a GeomTransform"
+        if dGeomGetSpace(geom.gid)!=<dSpaceID>0:
+            raise ValueError, "The encapsulated geom was already inserted into a space."
+        if dGeomGetBody(geom.gid)!=<dBodyID>0:
+            raise ValueError, "The encapsulated geom is already associated with a body."
         
         id = geom._id()
         dGeomTransformSetGeom(self.gid, <dGeomID>id)
@@ -591,6 +602,8 @@ cdef class GeomTransform(GeomObject):
         @param mode: Information mode (0 or 1)
         @type mode: int
         """
+        if mode<0 or mode>1:
+            raise ValueError, "Invalid information mode (%d). Must be either 0 or 1."%mode
         dGeomTransformSetInfo(self.gid, mode)
 
     def getInfo(self):
