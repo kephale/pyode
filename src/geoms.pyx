@@ -53,14 +53,36 @@ cdef class GeomObject:
     def __setattr__(self, name, val):
         self.attribs[name]=val
 
+    def _id(self):
+        """_id() -> int
+
+        Return the internal id of the geom (dGeomID) as returned by
+        the dCreateXyz() functions.
+
+        This method has to be overwritten in derived methods.        
+        """
+        raise NotImplementedError, "Bug: The _id() method is not implemented."
+
+    def placeable(self):
+        """placeable() -> bool
+
+        Returns True if the geom object is a placeable geom.
+
+        This method has to be overwritten in derived methods.
+        """
+        return False
+
     def setBody(self, Body body):
         """setBody(body)
 
-        Associate the geom to a body or remove an association.
+        Set the body associated with a placeable geom.
 
         @param body: The Body object or None.
         @type body: Body
         """
+
+        if not self.placeable():
+            raise ValueError, "Non-placeable geoms cannot have a body associated to them."
         
         if body==None:
             dGeomSetBody(self.gid, NULL)
@@ -69,17 +91,53 @@ cdef class GeomObject:
         self.body = body
 
     def getBody(self):
+        """getBody() -> Body
+
+        Get the body associated with this geom.
+        """
+        if not self.placeable():
+            return environment
+        
         return self.body
 
     def setPosition(self, pos):
+        """setPosition(pos)
+
+        Set the position of the geom. If the geom is attached to a body,
+        the body's position will also be changed.
+
+        @param pos: Position
+        @type pos: 3-sequence of floats
+        """
+        if not self.placeable():
+            raise ValueError, "Cannot set a position on non-placeable geoms."
         dGeomSetPosition(self.gid, pos[0], pos[1], pos[2])
 
     def getPosition(self):
+        """getPosition() -> 3-tuple
+
+        Get the current position of the geom. If the geom is attached to
+        a body the returned value is the body's position.
+        """
+        if not self.placeable():
+            raise ValueError, "Non-placeable geoms do not have a position."
+
         cdef dReal* p
         p = <dReal*>dGeomGetPosition(self.gid)
         return (p[0],p[1],p[2])
 
     def setRotation(self, R):
+        """setRotation(R)
+
+        Set the orientation of the geom. If the geom is attached to a body,
+        the body's orientation will also be changed.
+
+        @param R: Rotation matrix
+        @type R: 9-sequence of floats
+        """
+        if not self.placeable():
+            raise ValueError, "Cannot set a rotation on non-placeable geoms."
+
         cdef dMatrix3 m
         m[0] = R[0]
         m[1] = R[1]
@@ -96,12 +154,33 @@ cdef class GeomObject:
         dGeomSetRotation(self.gid, m)
 
     def getRotation(self):
+        """getRotation() -> 9-tuple
+
+        Get the current orientation of the geom. If the geom is attached to
+        a body the returned value is the body's orientation.
+        """
+        if not self.placeable():
+            raise ValueError, "Non-placeable geoms do not have a rotation."
+
         cdef dReal* m
         m = <dReal*>dGeomGetRotation(self.gid)
         return [m[0],m[1],m[2],m[4],m[5],m[6],m[8],m[9],m[10]]
 
+    def getAABB(self):
+        """getAABB() -> 6-tuple
+
+        Return an axis aligned bounding box that surrounds the geom.
+        The return value is a 6-tuple (minx, maxx, miny, maxy, minz, maxz).
+        """
+        cdef dReal aabb[6]
+        
+        dGeomGetAABB(self.gid, aabb)
+        return (aabb[0], aabb[1], aabb[2], aabb[3], aabb[4], aabb[5])
+
     def isSpace(self):
-        """Return 1 if the given geom is a space, or 0 if not."""
+        """isSpace() -> bool
+
+        Return 1 if the given geom is a space, or 0 if not."""
         return dGeomIsSpace(self.gid)
 
     def getSpace(self):
@@ -112,27 +191,55 @@ cdef class GeomObject:
         return self.space
 
     def setCollideBits(self, bits):
+        """setCollideBits(bits)
+
+        Set the "collide" bitfields for this geom.
+
+        @param bits: Collide bit field
+        @type bits: int
+        """
         dGeomSetCollideBits(self.gid, bits)
         
     def setCategoryBits(self, bits):
+        """setCategoryBits(bits)
+
+        Set the "category" bitfields for this geom.
+
+        @param bits: Category bit field
+        @type bits: int
+        """
         dGeomSetCategoryBits(self.gid, bits)
 
     def getCollideBits(self):
+        """getCollideBits() -> int
+
+        Return the "collide" bitfields for this geom.
+        """
         return dGeomGetCollideBits(self.gid)
 
     def getCategoryBits(self):
+        """getCategoryBits() -> int
+
+        Return the "category" bitfields for this geom.
+        """
         return dGeomGetCategoryBits(self.gid)
     
     def enable(self):
-        """Enable the geom."""
+        """enable()
+
+        Enable the geom."""
         dGeomEnable(self.gid)
 
     def disable(self):
-        """Disable the geom."""
+        """disable()
+
+        Disable the geom."""
         dGeomDisable(self.gid)
 
     def isEnabled(self):
-        """Return True if the geom is enabled."""
+        """isEnabled() -> bool
+
+        Return True if the geom is enabled."""
         return dGeomIsEnabled(self.gid)
 
 
@@ -162,18 +269,42 @@ cdef class GeomSphere(GeomObject):
         self.space = space
         self.body = None
 
+    def placeable(self):
+        return True
+
     def _id(self):
         cdef long id
         id = <long>self.gid
         return id
 
     def setRadius(self, radius):
+        """setRadius(radius)
+
+        Set the radius of the sphere.
+
+        @param radius: New radius
+        @type radius: float
+        """
         dGeomSphereSetRadius(self.gid, radius)
 
     def getRadius(self):
+        """getRadius() -> float
+
+        Return the radius of the sphere.
+        """
         return dGeomSphereGetRadius(self.gid)
 
     def pointDepth(self, p):
+        """pointDepth() -> float
+
+        Return the depth of the point p in the sphere. Points inside
+        the geom will have positive depth, points outside it will have
+        negative depth, and points on the surface will have zero
+        depth.
+
+        @param p: Point
+        @type p: 3-sequence of floats
+        """
         return dGeomSpherePointDepth(self.gid, p[0], p[1], p[2])
 
                 
@@ -200,6 +331,9 @@ cdef class GeomBox(GeomObject):
         self.space = space
         self.body = None
 
+    def placeable(self):
+        return True
+
     def _id(self):
         cdef long id
         id = <long>self.gid
@@ -214,6 +348,16 @@ cdef class GeomBox(GeomObject):
         return (res[0], res[1], res[2])
 
     def pointDepth(self, p):
+        """pointDepth() -> float
+
+        Return the depth of the point p in the box. Points inside the
+        geom will have positive depth, points outside it will have
+        negative depth, and points on the surface will have zero
+        depth.
+
+        @param p: Point
+        @type p: 3-sequence of floats
+        """
         return dGeomBoxPointDepth(self.gid, p[0], p[1], p[2])
 
 
@@ -258,14 +402,17 @@ cdef class GeomPlane(GeomObject):
         return ((res[0], res[1], res[2]), res[3])
 
     def pointDepth(self, p):
+        """pointDepth() -> float
+
+        Return the depth of the point p in the plane. Points inside the
+        geom will have positive depth, points outside it will have
+        negative depth, and points on the surface will have zero
+        depth.
+
+        @param p: Point
+        @type p: 3-sequence of floats
+        """
         return dGeomPlanePointDepth(self.gid, p[0], p[1], p[2])
-
-    def getBody(self):
-        return environment
-
-    def setBody(self, Body body):
-        if body!=None:
-            raise ValueError, "A GeomPlane cannot be associated to a body."
 
 
 # GeomCCylinder
@@ -291,6 +438,8 @@ cdef class GeomCCylinder(GeomObject):
         self.space = space
         self.body = None
 
+    def placeable(self):
+        return True
 
     def _id(self):
         cdef long id
@@ -306,6 +455,16 @@ cdef class GeomCCylinder(GeomObject):
         return (radius, length)
 
     def pointDepth(self, p):
+        """pointDepth() -> float
+
+        Return the depth of the point p in the cylinder. Points inside the
+        geom will have positive depth, points outside it will have
+        negative depth, and points on the surface will have zero
+        depth.
+
+        @param p: Point
+        @type p: 3-sequence of floats
+        """
         return dGeomCCylinderPointDepth(self.gid, p[0], p[1], p[2])
 
 
@@ -375,13 +534,15 @@ cdef class GeomTransform(GeomObject):
 
         _geom_c2py_lut[<long>self.gid]=self
 
-
     def __init__(self, space=None):
         self.space = space
         self.body = None
         self.geom = None
 
         self.attribs={}
+
+    def placeable(self):
+        return True
 
     def _id(self):
         cdef long id
@@ -397,4 +558,5 @@ cdef class GeomTransform(GeomObject):
 
     def getGeom(self):
         return self.geom
+
 
