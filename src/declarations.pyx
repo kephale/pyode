@@ -114,6 +114,22 @@ cdef extern from "ode/ode.h":
     void dWorldQuickStep (dWorldID, dReal stepsize)
     void dWorldSetQuickStepNumIterations (dWorldID, int num)
     int dWorldGetQuickStepNumIterations (dWorldID)
+    void dWorldSetContactMaxCorrectingVel (dWorldID, dReal vel)
+    dReal dWorldGetContactMaxCorrectingVel (dWorldID)
+    void dWorldSetContactSurfaceLayer (dWorldID, dReal depth)
+    dReal dWorldGetContactSurfaceLayer (dWorldID)
+    void dWorldSetAutoDisableFlag (dWorldID, int do_auto_disable)
+    int dWorldGetAutoDisableFlag (dWorldID)
+    void dWorldSetAutoDisableLinearThreshold (dWorldID, dReal linear_threshold)
+    dReal dWorldGetAutoDisableLinearThreshold (dWorldID)
+    void dWorldSetAutoDisableAngularThreshold (dWorldID, dReal angular_threshold)
+    dReal dWorldGetAutoDisableAngularThreshold (dWorldID)
+    void dWorldSetAutoDisableSteps (dWorldID, int steps)
+    int dWorldGetAutoDisableSteps (dWorldID)
+    void dWorldSetAutoDisableTime (dWorldID, dReal time)
+    dReal dWorldGetAutoDisableTime (dWorldID)
+    void dWorldImpulseToForce (dWorldID, dReal stepsize,
+                               dReal ix, dReal iy, dReal iz, dVector3 force)
 
     # Body
     dBodyID dBodyCreate (dWorldID)
@@ -153,6 +169,14 @@ cdef extern from "ode/ode.h":
 
     void dBodyGetRelPointPos    (dBodyID, dReal px, dReal py, dReal pz, dVector3 result)
     void dBodyGetRelPointVel    (dBodyID, dReal px, dReal py, dReal pz, dVector3 result)
+    void dBodyGetPointVel    (dBodyID, dReal px, dReal py, dReal pz,
+                              dVector3 result)
+    void dBodyGetPosRelPoint (dBodyID, dReal px, dReal py, dReal pz,
+                              dVector3 result)
+    void dBodyVectorToWorld   (dBodyID, dReal px, dReal py, dReal pz,
+                               dVector3 result)
+    void dBodyVectorFromWorld (dBodyID, dReal px, dReal py, dReal pz,
+                               dVector3 result)
 
     void dBodySetFiniteRotationMode (dBodyID, int mode)
     void dBodySetFiniteRotationAxis (dBodyID, dReal x, dReal y, dReal z)

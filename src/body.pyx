@@ -358,6 +358,96 @@ cdef class Body:
         @type t: 3-tuple of floats
         """
         dBodySetTorque(self.bid, t[0], t[1], t[2])
+
+    # getRelPointPos
+    def getRelPointPos(self, p):
+        """getRelPointPos(p) -> 3-tuple
+
+        Utility function that takes a point p on a body and returns
+        that point's position in global coordinates. The point p
+        must be given in body relative coordinates.
+
+        @param p: Body point (local coordinates)
+        @type p: 3-sequence of floats
+        """
+
+        cdef dVector3 res 
+        dBodyGetRelPointPos(self.bid, p[0], p[1], p[2], res)
+        return (res[0], res[1], res[2])
+
+    # getRelPointVel
+    def getRelPointVel(self, p):
+        """getRelPointVel(p) -> 3-tuple
+
+        Utility function that takes a point p on a body and returns
+        that point's velocity in global coordinates. The point p
+        must be given in body relative coordinates.
+
+        @param p: Body point (local coordinates)
+        @type p: 3-sequence of floats
+        """
+        cdef dVector3 res 
+        dBodyGetRelPointVel(self.bid, p[0], p[1], p[2], res)
+        return (res[0], res[1], res[2])
+
+    # getPointVel
+    def getPointVel(self, p):
+        """getPointVel(p) -> 3-tuple
+
+        Utility function that takes a point p on a body and returns
+        that point's velocity in global coordinates. The point p
+        must be given in global coordinates.
+
+        @param p: Body point (global coordinates)
+        @type p: 3-sequence of floats
+        """
+        cdef dVector3 res 
+        dBodyGetPointVel(self.bid, p[0], p[1], p[2], res)
+        return (res[0], res[1], res[2])
+
+    # getPosRelPoint
+    def getPosRelPoint(self, p):
+        """getPosRelPoint(p) -> 3-tuple
+
+        This is the inverse of getRelPointPos(). It takes a point p in
+        global coordinates and returns the point's position in
+        body-relative coordinates.
+
+        @param p: Body point (global coordinates)
+        @type p: 3-sequence of floats
+        """
+        cdef dVector3 res 
+        dBodyGetPosRelPoint(self.bid, p[0], p[1], p[2], res)
+        return (res[0], res[1], res[2])
+
+    # vectorToWorld
+    def vectorToWorld(self, v):
+        """vectorToWorld(v) -> 3-tuple
+
+        Given a vector v expressed in the body coordinate system, rotate
+        it to the world coordinate system.
+
+        @param v: Vector in body coordinate system
+        @type v: 3-sequence of floats
+        """
+        cdef dVector3 res
+        dBodyVectorToWorld(self.bid, v[0], v[1], v[2], res)
+        return (res[0], res[1], res[2])
+
+    # vectorFromWorld
+    def vectorFromWorld(self, v):
+        """vectorFromWorld(v) -> 3-tuple
+
+        Given a vector v expressed in the world coordinate system, rotate
+        it to the body coordinate system.
+
+        @param v: Vector in world coordinate system
+        @type v: 3-sequence of floats
+        """
+        cdef dVector3 res
+        dBodyVectorFromWorld(self.bid, v[0], v[1], v[2], res)
+        return (res[0], res[1], res[2])        
+        
         
     # Enable
     def enable(self):

@@ -52,6 +52,7 @@ Geom classes:
  - GeomCCylinder
  - GeomRay
  - GeomTransform
+ - GeomTriMesh / TriMeshData
 
 Functions:
 
