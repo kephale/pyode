@@ -20,7 +20,7 @@ cdef class GeomTriMesh(GeomObject):
     cdef TriMeshData data
 
     def __new__(self, TriMeshData data not None, space=None):
-        cdef Space sp
+        cdef SpaceBase sp
         cdef dSpaceID sid
 
         self.data = data

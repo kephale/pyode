@@ -291,10 +291,12 @@ cdef extern from "ode/ode.h":
     void dMassAdd (dMass *a, dMass *b)
 
     # Space
-    dSpaceID dSimpleSpaceCreate(int space)
-    dSpaceID dHashSpaceCreate(int space)
-#    dSpaceID dSimpleSpaceCreate(dSpaceID space)
-#    dSpaceID dHashSpaceCreate(dSpaceID space)
+#    dSpaceID dSimpleSpaceCreate(int space)
+#    dSpaceID dHashSpaceCreate(int space)
+    dSpaceID dSimpleSpaceCreate(dSpaceID space)
+    dSpaceID dHashSpaceCreate(dSpaceID space)
+    dSpaceID dQuadTreeSpaceCreate (dSpaceID space, dVector3 Center,
+                                   dVector3 Extents, int Depth)
 
     void dSpaceDestroy (dSpaceID)
     void dSpaceAdd (dSpaceID, dGeomID)
@@ -303,6 +305,7 @@ cdef extern from "ode/ode.h":
     void dSpaceCollide (dSpaceID space, void *data, dNearCallback *callback)
 
     void dHashSpaceSetLevels (dSpaceID space, int minlevel, int maxlevel)
+    void dHashSpaceGetLevels (dSpaceID space, int *minlevel, int *maxlevel)
 
     void dSpaceSetCleanup (dSpaceID space, int mode)
     int dSpaceGetCleanup (dSpaceID space)

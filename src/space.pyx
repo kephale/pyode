@@ -1,5 +1,5 @@
-# Space
-cdef class Space(GeomObject):
+# SpaceBase
+cdef class SpaceBase(GeomObject):
     """Space class (container for geometry objects).
 
     A Space object is a container for geometry objects which are used
@@ -24,21 +24,11 @@ cdef class Space(GeomObject):
     # is the geom object (Python wrapper). This is used in collide_callback()
 #    cdef object geom_dict
 
-    def __new__(self, type=0):
-        if type==0:
-            self.sid = dSimpleSpaceCreate(0)
-        else:
-            self.sid = dHashSpaceCreate(0)
-
-        # Copy the ID
-        self.gid = <dGeomID>self.sid
-
-        dSpaceSetCleanup(self.sid, 0)
-        _geom_c2py_lut[<long>self.sid]=self
-
-    def __init__(self, type=0):
+    def __new__(self, *a, **kw):
         pass
-#        self.geom_dict = {}
+
+    def __init__(self, *a, **kw):
+        raise NotImplementedError, "The SpaceBase class can't be used directly."
 
     def __dealloc__(self):
         if self.gid!=NULL:
@@ -173,3 +163,158 @@ cdef void collide_callback(void* data, dGeomID o1, dGeomID o2):
     g1=_geom_c2py_lut[id1]
     g2=_geom_c2py_lut[id2]
     callback(arg,g1,g2)
+
+
+# SimpleSpace
+cdef class SimpleSpace(SpaceBase):
+    """Simple space.
+
+    This does not do any collision culling - it simply checks every
+    possible pair of geoms for intersection, and reports the pairs
+    whose AABBs overlap. The time required to do intersection testing
+    for n objects is O(n**2). This should not be used for large numbers
+    of objects, but it can be the preferred algorithm for a small
+    number of objects. This is also useful for debugging potential
+    problems with the collision system.
+    """
+
+    def __new__(self, space=None):
+        cdef SpaceBase sp
+        cdef dSpaceID parentid
+
+        parentid = NULL
+        if space!=None:
+            sp = space
+            parentid = sp.sid
+        
+        self.sid = dSimpleSpaceCreate(parentid)
+
+        # Copy the ID
+        self.gid = <dGeomID>self.sid
+
+        dSpaceSetCleanup(self.sid, 0)
+        _geom_c2py_lut[<long>self.sid]=self
+
+    def __init__(self, space=None):
+        pass
+
+# HashSpace
+cdef class HashSpace(SpaceBase):
+    """Multi-resolution hash table space.
+
+    This uses an internal data structure that records how each geom
+    overlaps cells in one of several three dimensional grids. Each
+    grid has cubical cells of side lengths 2**i, where i is an integer
+    that ranges from a minimum to a maximum value. The time required
+    to do intersection testing for n objects is O(n) (as long as those
+    objects are not clustered together too closely), as each object
+    can be quickly paired with the objects around it.
+    """
+
+    def __new__(self, space=None):
+        cdef SpaceBase sp
+        cdef dSpaceID parentid
+
+        parentid = NULL
+        if space!=None:
+            sp = space
+            parentid = sp.sid
+        
+        self.sid = dHashSpaceCreate(parentid)
+
+        # Copy the ID
+        self.gid = <dGeomID>self.sid
+
+        dSpaceSetCleanup(self.sid, 0)
+        _geom_c2py_lut[<long>self.sid]=self
+
+    def __init__(self, space=None):
+        pass
+    
+    def setLevels(self, int minlevel, int maxlevel):
+        """setLevels(minlevel, maxlevel)
+
+        Sets the size of the smallest and largest cell used in the
+        hash table. The actual size will be 2^minlevel and 2^maxlevel
+        respectively.
+        """
+        
+        if minlevel>maxlevel:
+            raise ValueError, "minlevel (%d) must be less than or equal to maxlevel (%d)"%(minlevel, maxlevel)
+            
+        dHashSpaceSetLevels(self.sid, minlevel, maxlevel)
+
+    def getLevels(self):
+        """getLevels() -> (minlevel, maxlevel)
+
+        Gets the size of the smallest and largest cell used in the
+        hash table. The actual size is 2^minlevel and 2^maxlevel
+        respectively.
+        """
+        
+        cdef int minlevel
+        cdef int maxlevel
+        dHashSpaceGetLevels(self.sid, &minlevel, &maxlevel)
+        return (minlevel, maxlevel)
+
+
+# QuadTreeSpace
+cdef class QuadTreeSpace(SpaceBase):
+    """Quadtree space.
+
+    This uses a pre-allocated hierarchical grid-based AABB tree to
+    quickly cull collision checks. It's exceptionally quick for large
+    amounts of objects in landscape-shaped worlds. The amount of
+    memory used is 4**depth * 32 bytes.
+
+    Currently getGeom() is not implemented for the quadtree space.
+    """
+
+    def __new__(self, center, extents, depth, space=None):
+        cdef SpaceBase sp
+        cdef dSpaceID parentid
+        cdef dVector3 c
+        cdef dVector3 e
+
+        parentid = NULL
+        if space!=None:
+            sp = space
+            parentid = sp.sid
+
+        c[0] = center[0]
+        c[1] = center[1]
+        c[2] = center[2]
+        e[0] = extents[0]
+        e[1] = extents[1]
+        e[2] = extents[2]
+        self.sid = dQuadTreeSpaceCreate(parentid, c, e, depth)
+
+        # Copy the ID
+        self.gid = <dGeomID>self.sid
+
+        dSpaceSetCleanup(self.sid, 0)
+        _geom_c2py_lut[<long>self.sid]=self
+
+    def __init__(self, center, extents, depth, space=None):
+        pass
+
+
+def Space(type=0):
+    """Space factory function.
+
+    Depending on the type argument this function either returns a
+    SimpleSpace (type=0) or a HashSpace (type=1).
+
+    This function is provided to remain compatible with previous
+    versions of PyODE where there was only one Space class.
+    
+     >>> space = Space(type=0)   # Create a SimpleSpace
+     >>> space = Space(type=1)   # Create a HashSpace
+    """
+    if type==0:
+        return SimpleSpace()
+    elif type==1:
+        return HashSpace()
+    else:
+        raise ValueError, "Unknown space type (%d)"%type
+    

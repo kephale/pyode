@@ -12,7 +12,7 @@ cdef class GeomSphere(GeomObject):
     """
 
     def __new__(self, space=None, radius=1.0):
-        cdef Space sp
+        cdef SpaceBase sp
         cdef dSpaceID sid
 
         sid=NULL
@@ -81,7 +81,7 @@ cdef class GeomBox(GeomObject):
     """
 
     def __new__(self, space=None, lengths=(1.0, 1.0, 1.0)):
-        cdef Space sp
+        cdef SpaceBase sp
         cdef dSpaceID sid
         
         sid=NULL
@@ -145,7 +145,7 @@ cdef class GeomPlane(GeomObject):
     """
 
     def __new__(self, space=None, normal=(0,0,1), dist=0):
-        cdef Space sp
+        cdef SpaceBase sp
         cdef dSpaceID sid
         
         sid=NULL
@@ -205,7 +205,7 @@ cdef class GeomCCylinder(GeomObject):
     """
 
     def __new__(self, space=None, radius=0.5, length=1.0):
-        cdef Space sp
+        cdef SpaceBase sp
         cdef dSpaceID sid
         
         sid=NULL
@@ -268,7 +268,7 @@ cdef class GeomRay(GeomObject):
     """
 
     def __new__(self, space=None, rlen=1.0):
-        cdef Space sp
+        cdef SpaceBase sp
         cdef dSpaceID sid
         
         sid=NULL
@@ -323,7 +323,7 @@ cdef class GeomTransform(GeomObject):
     cdef object geom
 
     def __new__(self, space=None):
-        cdef Space sp
+        cdef SpaceBase sp
         cdef dSpaceID sid
         
         sid=NULL
