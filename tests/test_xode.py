@@ -68,7 +68,7 @@ test_doc = '''<?xml version="1.0" encoding="iso-8859-1"?>
         <link2 body="body2"/>
         <ball/>
       </joint>
-      
+
     </space>
   </world>
 
@@ -145,6 +145,76 @@ test_doc = '''<?xml version="1.0" encoding="iso-8859-1"?>
       </geom>
       
     </geom>
+
+    <joint name="joint4">
+      <link1 body="body4"/>
+      <link2 body="body6"/>
+      <fixed/>
+    </joint>
+
+    <joint name="joint5">
+      <link1 body="body4"/>
+      <link2 body="body6"/>
+      <hinge>
+        <axis x="1.0" y="0.0" z="0.0"/>
+      </hinge>
+    </joint>
+
+    <joint name="joint6">
+      <link1 body="body4"/>
+      <link2 body="body6"/>
+      <slider>
+        <axis x="0.0" y="1.0" z="0.0"
+              LowStop="1.0"
+              HiStop="2.0"
+              Vel="3.0"
+              FMax="4.0"
+              FudgeFactor="0.5"
+              Bounce="6.0"
+              CFM="7.0"
+              StopERP="8.0"
+              StopCFM="9.0" />
+      </slider>
+    </joint>
+
+    <joint name="joint7">
+      <link1 body="body4"/>
+      <link2 body="body6"/>
+      <universal>
+        <axis x="1.0" y="0.0" z="0.0"/>
+        <axis x="0.0" y="1.0" z="0.0"/>
+      </universal>
+    </joint>
+
+    <joint name="joint8">
+      <link1 body="body4"/>
+      <link2 body="body6"/>
+      <hinge2>
+        <axis x="0.0" y="0.0" z="1.0"
+              SuspensionERP="2.0"
+              SuspensionCFM="3.0" />
+        <axis x="0.0" y="1.0" z="0.0"
+              FudgeFactor="0.2" />
+      </hinge2>
+    </joint>
+
+    <joint name="joint9">
+      <link1 body="body4"/>
+      <link2 body="body6"/>
+      <amotor>
+        <axis x="0.0" y="1.0" z="0.0"/>
+      </amotor>
+    </joint>
+
+    <joint name="joint10">
+      <link1 body="body4"/>
+      <link2 body="body6"/>
+      <amotor>
+        <axis x="1.0" y="0.0" z="0.0"/>
+        <axis x="0.0" y="1.0" z="0.0"/>
+        <axis x="0.0" y="0.0" z="1.0"/>
+      </amotor>
+    </joint>
     
     </space>
   </world>
@@ -387,8 +457,15 @@ class TestJointParser(TestParser):
         self.joint1 = self.root.namedChild('joint1').getODEObject()
         self.joint2 = self.root.namedChild('joint2').getODEObject()
         self.joint3 = self.root.namedChild('joint3').getODEObject()
+        self.joint4 = self.root.namedChild('joint4').getODEObject()
+        self.joint5 = self.root.namedChild('joint5').getODEObject()
+        self.joint6 = self.root.namedChild('joint6').getODEObject()
+        self.joint7 = self.root.namedChild('joint7').getODEObject()
+        self.joint8 = self.root.namedChild('joint8').getODEObject()
+        self.joint9 = self.root.namedChild('joint9').getODEObject()
+        self.joint10 = self.root.namedChild('joint10').getODEObject()
 
-    def testInstance(self):
+    def testBallInstance(self):
         self.assert_(isinstance(self.joint1, ode.BallJoint))
 
     def testBodyAncestor(self):
@@ -407,6 +484,111 @@ class TestJointParser(TestParser):
     def testBallAnchor(self):
         for n1, n2 in zip(self.joint1.getAnchor(), (1.0, 2.0, 3.0)):
             self.assert_(feq(n1, n2))
+
+    def testFixedInstance(self):
+        self.assert_(isinstance(self.joint4, ode.FixedJoint))
+
+    def testHingeInstance(self):
+        self.assert_(isinstance(self.joint5, ode.HingeJoint))
+
+    def testHingeAxis(self):
+        self.assertEqual(self.joint5.getAxis(), (1.0, 0.0, 0.0))
+
+    def testSliderInstance(self):
+        self.assert_(isinstance(self.joint6, ode.SliderJoint))
+
+    def testSliderAxis(self):
+        self.assertEqual(self.joint6.getAxis(), (0.0, 1.0, 0.0))
+
+    def testUniversalInstance(self):
+        self.assert_(isinstance(self.joint7, ode.UniversalJoint))
+
+    def testUniversalAxis1(self):
+        ref = (1.0, 0.0, 0.0)
+        axis1 = self.joint7.getAxis1()
+
+        for r, a in zip(ref, axis1):
+            self.assert_(feq(r, a))
+
+    def testUniversalAxis2(self):
+        ref = (0.0, 1.0, 0.0)
+        axis2 = self.joint7.getAxis2()
+
+        for r, a in zip(ref, axis2):
+            self.assert_(feq(r, a))
+
+    def testHinge2Instance(self):
+        self.assert_(isinstance(self.joint8, ode.Hinge2Joint))
+
+    def testHinge2Axis1(self):
+        ref = (0.0, 0.0, 1.0)
+        axis1 = self.joint8.getAxis1()
+
+        for r, a in zip(ref, axis1):
+            self.assert_(feq(r, a))
+
+    def testHinge2Axis2(self):
+        ref = (0.0, 1.0, 0.0)
+        axis2 = self.joint8.getAxis2()
+
+        for r, a in zip(ref, axis2):
+            self.assert_(feq(r, a))
+
+    def testAMotorInstance(self):
+        self.assert_(isinstance(self.joint9, ode.AMotor))
+
+    def testAMotorNumAxes1(self):
+        self.assertEqual(self.joint9.getNumAxes(), 1)
+
+    def testAMotorNumAxes3(self):
+        self.assertEqual(self.joint10.getNumAxes(), 3)
+
+    def testAMotorAxes1(self):
+        ref = (0.0, 1.0, 0.0)
+        axis1 = self.joint9.getAxis(0)
+        self.assertEqual(ref, axis1)
+
+    def testAMotorAxes3(self):
+        ref = [(1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0)]
+        axes = [self.joint10.getAxis(0), self.joint10.getAxis(1),
+                self.joint10.getAxis(2)]
+        self.assertEqual(ref, axes)
+
+    def testAxisParamLoStop(self):
+        self.assertEqual(self.joint6.getParam(ode.paramLoStop), 1.0)
+
+    def testAxisParamHiStop(self):
+        self.assertEqual(self.joint6.getParam(ode.paramHiStop), 2.0)
+
+    def testAxisParamVel(self):
+        self.assertEqual(self.joint6.getParam(ode.paramVel), 3.0)
+
+    def testAxisParamFMax(self):
+        self.assertEqual(self.joint6.getParam(ode.paramFMax), 4.0)
+
+    def testAxisParamFudgeFactor(self):
+        self.assertEqual(self.joint6.getParam(ode.paramFudgeFactor), 0.5)
+
+    def testAxisParamBounce(self):
+        self.assertEqual(self.joint6.getParam(ode.paramBounce), 6.0)
+
+    def testAxisParamCFM(self):
+        self.assertEqual(self.joint6.getParam(ode.paramCFM), 7.0)
+
+    def testAxisParamStopERP(self):
+        self.assertEqual(self.joint6.getParam(ode.paramStopERP), 8.0)
+
+    def testAxisParamStopCFM(self):
+        self.assertEqual(self.joint6.getParam(ode.paramStopCFM), 9.0)
+
+    def testAxisParamSuspensionERP(self):
+        self.assertEqual(self.joint8.getParam(ode.paramSuspensionERP), 2.0)
+
+    def testAxisParamSuspensionCFM(self):
+        self.assertEqual(self.joint8.getParam(ode.paramSuspensionCFM), 3.0)
+
+    def testAxis2FudgeFactor(self):
+        self.assertEqual(self.joint8.getParam(ode.ParamFudgeFactor2), 0.2)
 
 class TestGeomParser(TestParser):
     def setUp(self):
@@ -721,6 +903,37 @@ class TestInvalidJoint(TestInvalid):
           <body name="body2"/>
         </space></world></xode>'''
         # bodies must be defined before the joint
+
+        self.assertRaises(errors.InvalidError, self.p.parseString, doc)
+
+    def testSliderAxes(self):
+        doc = '''<?xml version="1.0" encoding="iso-8859-1"?>
+        <xode><world><space name="space1">
+          <body name="body1"/>
+          <body name="body2"/>
+          <joint>
+            <link1 body="body1"/>
+            <link2 body="body2"/>
+            <slider>
+            </slider>
+          </joint>
+        </space></world></xode>'''
+
+        self.assertRaises(errors.InvalidError, self.p.parseString, doc)
+
+    def testInvalidParam(self):
+        doc = '''<?xml version="1.0" encoding="iso-8859-1"?>
+        <xode><world><space name="space1">
+          <body name="body1"/>
+          <body name="body2"/>
+          <joint>
+            <link1 body="body1"/>
+            <link2 body="body2"/>
+            <hinge>
+              <axis x="1.0" y="0.0" z="0.0" TestCFM="99.0"/>
+            </hinge>
+          </joint>
+        </space></world></xode>'''
 
         self.assertRaises(errors.InvalidError, self.p.parseString, doc)
 

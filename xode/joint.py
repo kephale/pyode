@@ -85,20 +85,26 @@ class Joint(node.TreeNode):
         elif (name == 'ext'):
             pass
         elif (name == 'amotor'):
-            pass
+            l1, l2 = self._getLinks()
+            self._parseAMotor(self._world, l1, l2)
         elif (name == 'ball'):
             l1, l2 = self._getLinks()
             self._parseBallJoint(self._world, l1, l2)
         elif (name == 'fixed'):
-            pass
+            l1, l2 = self._getLinks()
+            self._parseFixedJoint(self._world, l1, l2)
         elif (name == 'hinge'):
-            pass
+            l1, l2 = self._getLinks()
+            self._parseHingeJoint(self._world, l1, l2)
         elif (name == 'hinge2'):
-            pass
+            l1, l2 = self._getLinks()
+            self._parseHinge2Joint(self._world, l1, l2)
         elif (name == 'slider'):
-            pass
+            l1, l2 = self._getLinks()
+            self._parseSliderJoint(self._world, l1, l2)
         elif (name == 'universal'):
-            pass
+            l1, l2 = self._getLinks()
+            self._parseUniversalJoint(self._world, l1, l2)
         else:
             raise errors.ChildError('joint', name)
 
@@ -108,6 +114,28 @@ class Joint(node.TreeNode):
                 raise errors.InvalidError('No joint type element found.')
             self._parser.pop()
 
+    def _applyAxisParams(self, joint, anum, axis):
+        def setParam(name):
+            attr = 'Param%s' % name
+            if (anum != 0):
+                attr = '%s%i' % (attr, anum+1)
+            
+            joint.setParam(getattr(ode, attr), float(axis[name]))
+
+        if (axis.has_key('LowStop')):
+            axis['LoStop'] = axis['LowStop']
+            del axis['LowStop']
+            
+        for name in axis.keys():
+            if (name not in ['x', 'y', 'z']):
+                if (name in ['LoStop', 'HiStop', 'Vel', 'FMax', 'FudgeFactor',
+                             'Bounce', 'CFM', 'StopERP', 'StopCFM',
+                             'SuspensionERP', 'SuspensionCFM']):
+                    setParam(name)
+                else:
+                    raise errors.InvalidError('Invalid attribute %s' % `name` +
+                                              ' of <axis> element.')
+        
     def _parseBallJoint(self, world, link1, link2):
         anchor = [None]
     
@@ -123,6 +151,188 @@ class Joint(node.TreeNode):
                 joint.attach(link1, link2)
                 if (anchor[0] is not None):
                     joint.setAnchor(anchor[0])
+                
+                self.setODEObject(joint)
+                self._parser.pop()
+    
+        self._parser.push(startElement=start, endElement=end)
+
+    def _parseFixedJoint(self, world, link1, link2):
+        
+        def start(name, attrs):
+            raise errors.ChildError('fixed', name)
+    
+        def end(name):
+            if (name == 'fixed'):
+                self._parser.pop()
+        
+        joint = ode.FixedJoint(world, self._jg)
+        joint.attach(link1, link2)
+        self.setODEObject(joint)
+
+        self._parser.push(startElement=start, endElement=end)
+
+    def _parseHingeJoint(self, world, link1, link2):
+        anchor = [None]
+        axes = []
+    
+        def start(name, attrs):
+            if (name == 'anchor'):
+                anchor[0] = self._parser.parseVector(attrs)
+            elif (name == 'axis'):
+                axes.append(attrs)
+            else:
+                raise errors.ChildError('hinge', name)
+    
+        def end(name):
+            if (name == 'hinge'):
+                joint = ode.HingeJoint(world, self._jg)
+                joint.attach(link1, link2)
+                
+                if (anchor[0] is not None):
+                    joint.setAnchor(anchor[0])
+
+                if (len(axes) != 1):
+                    raise errors.InvalidError('Wrong number of axes for hinge'
+                                              ' joint.')
+                
+                joint.setAxis(self._parser.parseVector(axes[0]))
+                self._applyAxisParams(joint, 0, axes[0])
+                
+                self.setODEObject(joint)
+                self._parser.pop()
+    
+        self._parser.push(startElement=start, endElement=end)
+
+    def _parseSliderJoint(self, world, link1, link2):
+        axes = []
+    
+        def start(name, attrs):
+            if (name == 'axis'):
+                axes.append(attrs)
+            else:
+                raise errors.ChildError('slider', name)
+    
+        def end(name):
+            if (name == 'slider'):
+                joint = ode.SliderJoint(world, self._jg)
+                joint.attach(link1, link2)
+                
+                if (len(axes) != 1):
+                    raise errors.InvalidError('Wrong number of axes for slider'
+                                              ' joint.')
+                
+                joint.setAxis(self._parser.parseVector(axes[0]))
+                self._applyAxisParams(joint, 0, axes[0])
+                
+                self.setODEObject(joint)
+                self._parser.pop()
+    
+        self._parser.push(startElement=start, endElement=end)
+
+    def _parseUniversalJoint(self, world, link1, link2):
+        anchor = [None]
+        axes = []
+    
+        def start(name, attrs):
+            if (name == 'anchor'):
+                anchor[0] = self._parser.parseVector(attrs)
+            elif (name == 'axis'):
+                axes.append(attrs)
+            else:
+                raise errors.ChildError('universal', name)
+    
+        def end(name):
+            if (name == 'universal'):
+                joint = ode.UniversalJoint(world, self._jg)
+                joint.attach(link1, link2)
+
+                if (anchor[0] is not None):
+                    joint.setAnchor(anchor[0])
+                
+                if (len(axes) != 2):
+                    raise errors.InvalidError('Wrong number of axes for '
+                                              ' universal joint.')
+                
+                joint.setAxis1(self._parser.parseVector(axes[0]))
+                self._applyAxisParams(joint, 0, axes[0])
+                
+                joint.setAxis2(self._parser.parseVector(axes[1]))
+                self._applyAxisParams(joint, 1, axes[1])
+                
+                self.setODEObject(joint)
+                self._parser.pop()
+    
+        self._parser.push(startElement=start, endElement=end)
+
+    def _parseHinge2Joint(self, world, link1, link2):
+        anchor = [None]
+        axes = []
+    
+        def start(name, attrs):
+            if (name == 'anchor'):
+                anchor[0] = self._parser.parseVector(attrs)
+            elif (name == 'axis'):
+                axes.append(attrs)
+            else:
+                raise errors.ChildError('hinge2', name)
+    
+        def end(name):
+            if (name == 'hinge2'):
+                joint = ode.Hinge2Joint(world, self._jg)
+                joint.attach(link1, link2)
+
+                if (anchor[0] is not None):
+                    joint.setAnchor(anchor[0])
+                
+                if (len(axes) != 2):
+                    raise errors.InvalidError('Wrong number of axes for '
+                                              ' hinge2 joint.')
+                
+                joint.setAxis1(self._parser.parseVector(axes[0]))
+                self._applyAxisParams(joint, 0, axes[0])
+                
+                joint.setAxis2(self._parser.parseVector(axes[1]))
+                self._applyAxisParams(joint, 1, axes[1])
+                
+                self.setODEObject(joint)
+                self._parser.pop()
+    
+        self._parser.push(startElement=start, endElement=end)
+
+    def _parseAMotor(self, world, link1, link2):
+        anchor = [None]
+        axes = []
+    
+        def start(name, attrs):
+            # The XODE specification allows anchor elements for AMotor but
+            # there is no way to set the anchor of an AMotor.
+            
+            #if (name == 'anchor'):
+            #    anchor[0] = self._parser.parseVector(attrs)
+            
+            if (name == 'axis'):
+                axes.append(attrs)
+            else:
+                raise errors.ChildError('amotor', name)
+    
+        def end(name):
+            if (name == 'amotor'):
+                joint = ode.AMotor(world, self._jg)
+                joint.attach(link1, link2)
+
+                if (anchor[0] is not None):
+                    joint.setAnchor(anchor[0])
+                
+                if (len(axes) > 3):
+                    raise errors.InvalidError('Wrong number of axes for '
+                                              ' amotor joint.')
+
+                joint.setNumAxes(len(axes))
+                
+                for i in range(len(axes)):
+                    joint.setAxis(i, 0, self._parser.parseVector(axes[i]))
+                    self._applyAxisParams(joint, i, axes[i])
                 
                 self.setODEObject(joint)
                 self._parser.pop()
