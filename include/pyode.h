@@ -24,5 +24,7 @@ using namespace boost::python;
 #include "hinge2joint.h"
 #include "amotorjoint.h"
 
+#include "spheregeom.h"
+
 #include "main.h"
 

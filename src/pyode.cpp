@@ -21,6 +21,8 @@ BOOST_PYTHON_MODULE(pyode)
 	exportUniversalJoint();
 	exportContactJoint();
 
+	exportSphereGeom();
+
 	exportMain();
 }
 
