@@ -6,7 +6,8 @@
 
 from distutils.core import setup, Extension
 import distutils.sysconfig
-import shutil, os, os.path, sys
+import shutil, os, os.path, sys, glob
+from stat import *
 
 # Should the wrapper support trimesh geoms?
 TRIMESH_SUPPORT = True
@@ -96,26 +97,48 @@ else:
 f.close()
 
 
-# Generate the C source file
+# Generate the C source file (if necessary)
 cmd = "pyrexc -o ode.c -I. -Isrc src/ode.pyx"
-print cmd
-err = os.system(cmd)
+pyrex_out = "ode.c"
+
+# Check if the pyrex output is still up to date or if it has to be generated
+# (ode.c will be updated if any of the *.pyx files in the directory "src"
+# is newer than ode.c)
+if os.access(pyrex_out, os.F_OK):
+    ctime  = os.stat(pyrex_out)[ST_MTIME]
+    for pyx in glob.glob("src/*.pyx"):
+        pytime = os.stat(pyx)[ST_MTIME]
+        if pytime>ctime:
+            print "Updating",pyrex_out
+            print cmd
+            err = os.system(cmd)
+            break
+    else:
+        print pyrex_out,"is up to date"
+        err = 0
+else:
+    print "Creating",pyrex_out
+    print cmd
+    err = os.system(cmd)
+
+# Check if calling pyrex produced an error
 if err!=0:
     print "An error occured while generating the C source file."
     sys.exit(err)
 
 
 # Compile the module
-setup(name="pyODE",
-#      version="0.35cvs-2",
-      description="Python wrapper for the Open Dynamics Engine",
-#      author="Matthias Baas",
-#      author_email="baas@ira.uka.de",
-#      license="BSD license, see license*.txt",
-      packages=["xode"],
-      ext_modules=[Extension("ode", ["ode.c"]
-                   ,libraries=LIBS
-                   ,include_dirs=INC_DIRS
-                   ,library_dirs=LIB_DIRS
-                   ,extra_compile_args=CC_ARGS)                   
-                   ])
+setup(name = "pyODE",
+      version = "1.0.0",
+      description = "Python wrapper for the Open Dynamics Engine",
+      author = "see file AUTHORS",
+#      author_email = "baas@ira.uka.de",
+      license = "BSD or LGPL",
+      url = "http://pyode.sourceforge.net/",
+      packages = ["xode"],
+      ext_modules = [Extension("ode", ["ode.c"]
+                     ,libraries=LIBS
+                     ,include_dirs=INC_DIRS
+                     ,library_dirs=LIB_DIRS
+                     ,extra_compile_args=CC_ARGS)                   
+                    ])
