@@ -67,10 +67,15 @@ cdef class Joint:
     # The feedback buffer
     cdef dJointFeedback* feedback
 
+    cdef object body1
+    cdef object body2
+
     def __new__(self, *a, **kw):
         self.jid = NULL
         self.world = None
         self.feedback = NULL
+        self.body1 = None
+        self.body2 = None
 
     def __init__(self, *a, **kw):
         raise NotImplementedError, "The Joint base class can't be used directly."
@@ -93,7 +98,19 @@ cdef class Joint:
     # attach
     def attach(self, Body Body1, Body Body2):
         """TODO: What if there's only one body."""
+
+        self.body1 = Body1
+        self.body2 = Body2
         dJointAttach(self.jid, Body1.bid, Body2.bid)
+
+    # getBody
+    def getBody(self, index):
+        if (index == 0):
+            return self.body1
+        elif (index == 1):
+            return self.body2
+        else:
+            raise IndexError()
 
     # setFeedback
     def setFeedback(self, flag=1):
@@ -142,8 +159,8 @@ cdef class Joint:
         return (f1,t1,f2,t2)
 
 ######################################################################
-       
-        
+
+
 # BallJoint
 cdef class BallJoint(Joint):
     """Ball joint.

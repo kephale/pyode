@@ -87,6 +87,7 @@ setup(name="pyODE",
 #      author="Matthias Baas",
 #      author_email="baas@ira.uka.de",
 #      license="BSD license, see license*.txt",
+      packages=["xode"],
       ext_modules=[Extension("ode", ["ode.c"]
                    ,libraries=LIBS
                    ,include_dirs=INC_DIRS
