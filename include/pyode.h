@@ -25,6 +25,7 @@ using namespace boost::python;
 #include "amotorjoint.h"
 
 #include "spheregeom.h"
+#include "boxgeom.h"
 
 #include "main.h"
 

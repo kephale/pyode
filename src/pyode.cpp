@@ -22,6 +22,7 @@ BOOST_PYTHON_MODULE(pyode)
 	exportContactJoint();
 
 	exportSphereGeom();
+	exportBoxGeom();
 
 	exportMain();
 }
