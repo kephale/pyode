@@ -1,11 +1,23 @@
-####################################################################
+######################################################################
 # Python Open Dynamics Engine Wrapper
+# Copyright (C) 2004 PyODE developers (see file AUTHORS)
+# All rights reserved.
 #
-# Copyright (C) 2003, Matthias Baas (baas@ira.uka.de)
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of EITHER:
+#   (1) The GNU Lesser General Public License as published by the Free
+#       Software Foundation; either version 2.1 of the License, or (at
+#       your option) any later version. The text of the GNU Lesser
+#       General Public License is included with this library in the
+#       file LICENSE.
+#   (2) The BSD-style license that is included with this library in
+#       the file LICENSE-BSD.
 #
-# You may distribute under the terms of the BSD license, as
-# specified in the files license*.txt.
-# -------------------------------------------------------------
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the files
+# LICENSE and LICENSE-BSD for more details. 
+######################################################################
 # Open Dynamics Engine
 # Copyright (c) 2001-2003, Russell L. Smith.
 # All rights reserved. 
