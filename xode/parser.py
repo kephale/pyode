@@ -17,11 +17,10 @@ present merely for organisation (such as the Group node).
 
 Currently, the following features of XODE are not supported:
 
-    - Geoms
-    - Quaternion and axis-angle rotation modes.
+    - Quaternion and axis-angle rotation modes
     - Groups
-    - Joints other than BallJoint.
-    - Extension support.
+    - Joints other than BallJoint
+    - Extension support
 
 Usage
 =====

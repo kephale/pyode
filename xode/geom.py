@@ -57,7 +57,7 @@ class Geom(node.TreeNode):
         elif (name == 'sphere'):
             self._parseGeomSphere(attrs)
         elif (name == 'trimesh'):
-            raise NotImplementedError()
+            self._parseTriMesh(attrs)
         elif (name == 'geom'):
             g = Geom(nodeName, self)
             g.takeParser(self._parser)
@@ -83,7 +83,7 @@ class Geom(node.TreeNode):
             
             self._parser.pop()
 
-    def _setObject(self, kclass, *args):
+    def _setObject(self, kclass, **kwargs):
         """
         Create the Geom object and apply transforms. Only call for placeable
         Geoms.
@@ -92,7 +92,8 @@ class Geom(node.TreeNode):
         if (self._body is None):
             # The Geom is independant so it can have its own transform
 
-            obj = kclass(*((self._space,) + args))
+            kwargs['space'] = self._space
+            obj = kclass(**kwargs)
 
             t = self.getTransform()
             obj.setPosition(t.getPosition())
@@ -105,7 +106,8 @@ class Geom(node.TreeNode):
             # by placed in a GeomTransform and its transform is relative
             # to the body.
 
-            obj = kclass(*((None,) + args))
+            kwargs['space'] = None
+            obj = kclass(**kwargs)
 
             t = self.getTransform(self._body)
             obj.setPosition(t.getPosition())
@@ -117,7 +119,8 @@ class Geom(node.TreeNode):
             
             self.setODEObject(trans)
         else:
-            obj = kclass(*((self._space,) + args))
+            kwargs['space'] = self._space
+            obj = kclass(**kwargs)
             obj.setBody(self._body.getODEObject())
             self.setODEObject(obj)
 
@@ -136,7 +139,7 @@ class Geom(node.TreeNode):
         ly = float(attrs['sizey'])
         lz = float(attrs['sizez'])
 
-        self._setObject(ode.GeomBox, (lx, ly, lz))
+        self._setObject(ode.GeomBox, lengths=(lx, ly, lz))
         self._parser.push(startElement=start, endElement=end)
 
     def _parseGeomCCylinder(self, attrs):
@@ -153,7 +156,7 @@ class Geom(node.TreeNode):
         radius = float(attrs['radius'])
         length = float(attrs['length'])
 
-        self._setObject(ode.GeomCCylinder, radius, length)
+        self._setObject(ode.GeomCCylinder, radius=radius, length=length)
         self._parser.push(startElement=start, endElement=end)
 
     def _parseGeomSphere(self, attrs):
@@ -169,7 +172,7 @@ class Geom(node.TreeNode):
 
         radius = float(attrs['radius'])
 
-        self._setObject(ode.GeomSphere, radius)
+        self._setObject(ode.GeomSphere, radius=radius)
         self._parser.push(startElement=start, endElement=end)
 
     def _parseGeomPlane(self, attrs):
@@ -205,4 +208,30 @@ class Geom(node.TreeNode):
         length = float(attrs['length'])
 
         self.setODEObject(ode.GeomRay(self._space, length))
+        self._parser.push(startElement=start, endElement=end)
+
+    def _parseTriMesh(self, attrs):
+        vertices = []
+        triangles = []
+        
+        def start(name, attrs):
+            if (name == 'vertices'):
+                pass
+            elif (name == 'triangles'):
+                pass
+            elif (name == 'v'):
+                vertices.append(self._parser.parseVector(attrs))
+            elif (name == 't'):
+                tri = int(attrs['ia'])-1, int(attrs['ib'])-1, int(attrs['ic'])-1
+                triangles.append(tri)
+            else:
+                raise errors.ChildError('trimesh', name)
+
+        def end(name):
+            if (name == 'trimesh'):
+                data = ode.TriMeshData()
+                data.build(vertices, triangles)
+                self._setObject(ode.GeomTriMesh, data=data)
+                self._parser.pop()
+        
         self._parser.push(startElement=start, endElement=end)

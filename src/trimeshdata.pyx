@@ -38,7 +38,7 @@ cdef class TriMeshData:
         numverts = len(verts)
         numfaces = len(faces)
         # Allocate the vertex and face buffer
-        self.vertex_buffer = <dReal*>malloc(numverts*3*sizeof(dReal))
+        self.vertex_buffer = <dReal*>malloc(numverts*4*sizeof(dReal))
         self.face_buffer = <int*>malloc(numfaces*3*sizeof(int))
 
         # Fill the vertex buffer
@@ -47,8 +47,8 @@ cdef class TriMeshData:
             vp[0] = v[0]
             vp[1] = v[1]
             vp[2] = v[2]
-#            vp[3] = 0
-            vp = vp+3
+            vp[3] = 0
+            vp = vp+4
 
         # Fill the face buffer
         fp = self.face_buffer
@@ -64,5 +64,4 @@ cdef class TriMeshData:
             fp = fp+3
 
         # Pass the data to ODE
-#        dGeomTriMeshDataBuildSimple(self.tmdid, self.vertex_buffer, numverts, self.face_buffer, numfaces)
-        dGeomTriMeshDataBuildSingle1(self.tmdid, self.vertex_buffer, 3*sizeof(dReal), numverts, self.face_buffer, numfaces, 3*sizeof(int), NULL)
+        dGeomTriMeshDataBuildSimple(self.tmdid, self.vertex_buffer, numverts, self.face_buffer, numfaces*3)

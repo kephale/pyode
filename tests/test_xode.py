@@ -5,7 +5,7 @@ import ode
 import math
 from xode import node, transform, parser, errors
 
-test_doc = '''<?xml version="1.0"?>
+test_doc = '''<?xml version="1.0" encoding="iso-8859-1"?>
 <xode>
   <world name="world1">
 
@@ -150,6 +150,31 @@ test_doc = '''<?xml version="1.0"?>
   </world>
 
 </xode>'''
+
+trimesh_doc='''<?xml version="1.0" encoding="iso-8859-1"?>
+<xode>
+  <world>
+    <space>
+      <geom name="trimesh1">
+        <trimesh>
+          <vertices>
+            <v x="0" y="1" z="1" />
+            <v x="1" y="2" z="2" />
+            <v x="2" y="0" z="1" />
+            <v x="0" y="1" z="2" />
+            <v x="2" y="2" z="1" />
+          </vertices>
+          <triangles>
+            <t ia="1" ib="2" ic="3" />
+            <t ia="2" ib="1" ic="4" />
+            <t ia="3" ib="2" ic="1" />
+          </triangles>
+        </trimesh>
+      </geom>
+    </space>
+  </world>
+</xode>
+'''
 
 def feq(n1, n2, error=0.1):
     """
@@ -489,21 +514,52 @@ class TestTransformParser(TestParser):
                 else:
                     self.assertEqual(t.m[r][c], 0)
 
+class TestTriMeshParser(unittest.TestCase):
+    def setUp(self):
+        self.p = parser.Parser()
+        self.root = self.p.parseString(trimesh_doc)
+        self.trimesh1 = self.root.namedChild('trimesh1').getODEObject()
+
+    def testInstance(self):
+        self.assert_(isinstance(self.trimesh1, ode.GeomTriMesh))
+
+    def testTriangles(self):
+        triangles = [(1, 2, 3),
+                     (2, 1, 4),
+                     (3, 2, 1)]
+
+        vertices = [(0.0, 1.0, 1.0),
+                    (1.0, 2.0, 2.0),
+                    (2.0, 0.0, 1.0),
+                    (0.0, 1.0, 2.0),
+                    (2.0, 2.0, 1.0)]
+
+        for i in range(len(triangles)):
+            tri = self.trimesh1.getTriangle(i)
+            
+            ref = []
+            for v in triangles[i]:
+                ref.append(vertices[v-1])
+                
+            self.assertEqual(tri, tuple(ref))
+
 class TestInvalid(unittest.TestCase):
     def setUp(self):
         self.p = parser.Parser()
 
 class TestInvalidTags(TestInvalid):
     def testRoot(self):
-        self.assertRaises(errors.InvalidError, self.p.parseString,
-                          '<?xml version="1.0"?>\n<test></test>')
+        doc = '''<?xml version="1.0" encoding="iso-8859-1"?>
+        <test></test>'''
+        self.assertRaises(errors.InvalidError, self.p.parseString, doc)
         
     def testRootChild(self):
-        self.assertRaises(errors.ChildError, self.p.parseString,
-                          '<?xml version="1.0"?>\n<xode><test/></xode>')
+        doc = '''<?xml version="1.0" encoding="iso-8859-1"?>
+        <xode><test/></xode>'''
+        self.assertRaises(errors.ChildError, self.p.parseString, doc)
 
     def testWorldChild(self):
-        doc = '''<?xml version="1.0"?>
+        doc = '''<?xml version="1.0" encoding="iso-8859-1"?>
         <xode><world>
           <test/>
         </world></xode>'''
@@ -511,7 +567,7 @@ class TestInvalidTags(TestInvalid):
         self.assertRaises(errors.ChildError, self.p.parseString, doc)
 
     def testSpaceChild(self):
-        doc = '''<?xml version="1.0"?>
+        doc = '''<?xml version="1.0" encoding="iso-8859-1"?>
         <xode><world><space>
           <test/>
         </space></world></xode>'''
@@ -519,7 +575,7 @@ class TestInvalidTags(TestInvalid):
         self.assertRaises(errors.ChildError, self.p.parseString, doc)
 
     def testMassChild(self):
-        doc = '''<?xml version="1.0"?>
+        doc = '''<?xml version="1.0" encoding="iso-8859-1"?>
         <xode><world><space>
           <body>
             <mass>
@@ -531,18 +587,25 @@ class TestInvalidTags(TestInvalid):
         self.assertRaises(errors.ChildError, self.p.parseString, doc)
 
     def testJointChild(self):
-        doc = '''<?xml version="1.0"?>
+        doc = '''<?xml version="1.0" encoding="iso-8859-1"?>
         <xode><world><space><joint><test/></joint></space></world></xode>'''
         self.assertRaises(errors.ChildError, self.p.parseString, doc)
 
     def testGeomChild(self):
-        doc = '''<?xml version="1.0"?>
+        doc = '''<?xml version="1.0" encoding="iso-8859-1"?>
         <xode><world><space><geom><test/></geom></space></world></xode>'''
+        self.assertRaises(errors.ChildError, self.p.parseString, doc)
+
+    def testTriMeshChild(self):
+        doc = '''<?xml version="1.0" encoding="iso-8859-1"?>
+        <xode><world><space><geom><trimesh><test/>
+        </trimesh></geom></space></world></xode>
+        '''
         self.assertRaises(errors.ChildError, self.p.parseString, doc)
 
 class TestInvalidBody(TestInvalid):
     def testBadVector(self):
-        doc = '''<?xml version="1.0"?>
+        doc = '''<?xml version="1.0" encoding="iso-8859-1"?>
         <xode><world>
           <body>
             <torque x="1"/>
@@ -552,7 +615,7 @@ class TestInvalidBody(TestInvalid):
         self.assertRaises(errors.InvalidError, self.p.parseString, doc)
 
     def testBodyEnable(self):
-        doc = '''<?xml version="1.0"?>
+        doc = '''<?xml version="1.0" encoding="iso-8859-1"?>
         <xode><world>
           <body enabled="unsure">
           </body>
@@ -561,7 +624,7 @@ class TestInvalidBody(TestInvalid):
         self.assertRaises(errors.InvalidError, self.p.parseString, doc)
 
     def testFiniteRotationMode(self):
-        doc = '''<?xml version="1.0"?>
+        doc = '''<?xml version="1.0" encoding="iso-8859-1"?>
         <xode><world>
           <body>
             <finiteRotation mode="99" xaxis="0" yaxis="0" zaxis="0"/>
@@ -571,7 +634,7 @@ class TestInvalidBody(TestInvalid):
         self.assertRaises(errors.InvalidError, self.p.parseString, doc)
 
     def testFiniteRotationAxes(self):
-        doc = '''<?xml version="1.0"?>
+        doc = '''<?xml version="1.0" encoding="iso-8859-1"?>
         <xode><world>
           <body>
             <finiteRotation mode="0" xaxis="0" yaxis="0"/>
@@ -582,7 +645,7 @@ class TestInvalidBody(TestInvalid):
 
 class TestInvalidJoint(TestInvalid):
     def testEqualLinks(self):
-        doc = '''<?xml version="1.0"?>
+        doc = '''<?xml version="1.0" encoding="iso-8859-1"?>
         <xode><world><space>
           <joint>
             <ball/>
@@ -593,7 +656,7 @@ class TestInvalidJoint(TestInvalid):
         self.assertRaises(errors.InvalidError, self.p.parseString, doc)
 
     def testNoType(self):
-        doc = '''<?xml version="1.0"?>
+        doc = '''<?xml version="1.0" encoding="iso-8859-1"?>
         <xode><world><space>
           <joint/>
         </space></world></xode>'''
@@ -601,7 +664,7 @@ class TestInvalidJoint(TestInvalid):
         self.assertRaises(errors.InvalidError, self.p.parseString, doc)
 
     def testWrongType(self):
-        doc = '''<?xml version="1.0"?>
+        doc = '''<?xml version="1.0" encoding="iso-8859-1"?>
         <xode><world><space name="space1">
           <body name="body1"/>
           <joint>
@@ -614,7 +677,7 @@ class TestInvalidJoint(TestInvalid):
         self.assertRaises(errors.InvalidError, self.p.parseString, doc)
 
     def testMisplacedReference(self):
-        doc = '''<?xml version="1.0"?>
+        doc = '''<?xml version="1.0" encoding="iso-8859-1"?>
         <xode><world><space name="space1">
           <body name="body1"/>
           <joint>
@@ -630,7 +693,7 @@ class TestInvalidJoint(TestInvalid):
 
 class TestInvalidGeom(TestInvalid):
     def testNoType(self):
-        doc = '''<?xml version="1.0"?>
+        doc = '''<?xml version="1.0" encoding="iso-8859-1"?>
         <xode><world><space>
           <geom/>
         </space></world></xode>'''
