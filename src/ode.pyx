@@ -193,6 +193,18 @@ def collide(geom1, geom2):
 
     return res
 
+def areConnected(Body body1, Body body2):
+    """Return True if the two bodies are connected together by a joint,
+       otherwise return False.
+    """
+
+    if (body1 is environment):
+        return False
+    if (body2 is environment):
+        return False
+
+    return bool(dAreConnected(<dBodyID> body1.bid, <dBodyID> body2.bid))
+
 def CloseODE():
     """CloseODE()
 

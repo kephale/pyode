@@ -176,9 +176,15 @@ class Mass(node.TreeNode):
                 radius = float(attrs.get('radius', 1.0))
                 if (density is not None):
                     mass.setSphere(float(density), radius)
+            elif (name == 'box'):
+                lx = float(attrs['sizex'])
+                ly = float(attrs['sizey'])
+                lz = float(attrs['sizez'])
+                if (density is not None):
+                    mass.setBox(float(density), lx, ly, lz)
             else:
-                # parse other shapes
-                pass
+                # FIXME: Implement remaining mass shapes.
+                raise NotImplementedError()
     
         def end(name):
             if (name == 'mass_shape'):
