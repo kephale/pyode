@@ -29,6 +29,7 @@ Here's an example showing how to parse a document and transverse the resultant
 tree::
 
   | from xode import parser
+  | import ode
   |
   | f = file('xode-document.xml')
   | p = parser.Parser(f)
@@ -56,7 +57,49 @@ import errors, transform, node, body, joint, geom
 class Parser:
     """
     An XODE parser.
+
+    Parameters
+    ==========
+
+    Certain aspects of the parsing can be controlled by setting parameters with
+    L{setParams()}.
+    
+    C{spaceFactory}
+    ---------------
+
+    C{spaceFactory} can be set to a callable object that creates instances
+    which inherit from L{ode.SpaceBase}. This factory will be used by the
+    parser to create Space objects for <space> tags unless the class is
+    overridden in the XODE file. The default behavior is to use the
+    L{ode.SimpleSpace} class.
+
+    Example using L{ode.HashSpace}::
+
+        | from xode import parser
+        | import ode
+        |
+        | p = parser.Parser()
+        | p.setParams(spaceFactory=ode.HashSpace)
+
+    Example using L{ode.QuadTreeSpace}::
+
+        | from xode import parser
+        | import ode
+        |
+        | def makeSpace():
+        |     return ode.QuadTreeSpace((0, 0, 0), (2, 2, 2), 3)
+        |
+        | p = parser.Parser()
+        | p.setParams(spaceFactory=makeSpace)
     """
+
+    def __init__(self):
+        """
+        Initialise the parser.
+        """
+
+        self._params = {}
+        self.setParams(spaceFactory=ode.SimpleSpace)
 
     def _nullHandler(self, *args, **kwargs):
         return
@@ -147,6 +190,25 @@ class Parser:
         self._create().ParseFile(fp)
         return self._root
 
+    def setParams(self, **params):
+        """
+        Sets some parse parameters.
+        """
+
+        self._params.update(params)
+
+    def getParam(self, name):
+        """
+        @param name: The parameter name.
+        @type name: str
+
+        @return: The value of the given parameter.
+
+        @raise KeyError: If the parameter is not defined.
+        """
+
+        return self._params[name]
+
 class Root(node.TreeNode):
     """
     The root of the object structure. It corresponds to the <xode> tag.
@@ -227,7 +289,6 @@ class Space(node.TreeNode):
 
     def __init__(self, name, parent):
         node.TreeNode.__init__(self, name, parent)
-        self.setODEObject(ode.Space())
 
     def takeParser(self, parser):
         """
@@ -237,6 +298,8 @@ class Space(node.TreeNode):
         @param parser: The parser.
         @type parser: instance of L{Parser}
         """
+
+        self.setODEObject(parser.getParam('spaceFactory')())
         
         self._parser = parser
         self._parser.push(startElement=self._startElement,

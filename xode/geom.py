@@ -17,7 +17,7 @@ class Geom(node.TreeNode):
     def __init__(self, name, parent):
         node.TreeNode.__init__(self, name, parent)
 
-        self._space = self.getFirstAncestor(ode.Space).getODEObject()
+        self._space = self.getFirstAncestor(ode.SpaceBase).getODEObject()
         self._transformed = False
         
         try:

@@ -270,9 +270,42 @@ class TestWorldParser(TestParser):
         self.assert_(isinstance(world, ode.World))
 
 class TestSpaceParser(TestParser):
-    def testInstance(self):
-        space = self.root.namedChild('space1').getODEObject()
-        self.assert_(isinstance(space, ode.Space))
+    def setUp(self):
+        TestParser.setUp(self)
+        self.simpleSpace = self.root.namedChild('space1').getODEObject()
+
+        doc = '''<?xml version="1.0" encoding="iso-8859-1"?>
+        <xode><world>
+          <space name="space1"/>
+        </world></xode>
+        '''
+
+        self.p2 = parser.Parser()
+        self.p2.setParams(spaceFactory=ode.HashSpace)
+        self.root2 = self.p2.parseString(doc)
+        self.hashSpace = self.root2.namedChild('space1').getODEObject()
+
+        def makeSpace():
+            return ode.QuadTreeSpace((0, 0, 0), (2, 2, 2), 3)
+
+        self.p3 = parser.Parser()
+        self.p3.setParams(spaceFactory=makeSpace)
+        self.root3 = self.p3.parseString(doc)
+        self.quadSpace = self.root3.namedChild('space1').getODEObject()
+        
+    def testSimpleInstance(self):
+        self.assert_(isinstance(self.simpleSpace, ode.SimpleSpace))
+
+    def testHashInstance(self):
+        self.assert_(isinstance(self.hashSpace, ode.HashSpace))
+
+    def testQuadInstance(self):
+        self.assert_(isinstance(self.quadSpace, ode.QuadTreeSpace))
+
+    def testSpaceBase(self):
+        self.assert_(isinstance(self.simpleSpace, ode.SpaceBase))
+        self.assert_(isinstance(self.hashSpace, ode.SpaceBase))
+        self.assert_(isinstance(self.quadSpace, ode.SpaceBase))
 
 class TestBodyParser(TestParser):
     def setUp(self):
