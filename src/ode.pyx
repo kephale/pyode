@@ -164,7 +164,7 @@ def collide(geom1, geom2):
     otherwise it returns an empty list.
     """
     
-    cdef dContactGeom c[10]
+    cdef dContactGeom c[150]
     cdef long id1
     cdef long id2
     cdef int i, n
@@ -173,7 +173,7 @@ def collide(geom1, geom2):
     id1 = geom1._id()
     id2 = geom2._id()
 
-    n = dCollide(<dGeomID>id1, <dGeomID>id2, 10, c, sizeof(dContactGeom))
+    n = dCollide(<dGeomID>id1, <dGeomID>id2, 150, c, sizeof(dContactGeom))
     res = []
     i=0
     while i<n:
