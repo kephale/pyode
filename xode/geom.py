@@ -80,37 +80,46 @@ class Geom(node.TreeNode):
             
             if (obj is None):
                 raise errors.InvalidError('No geom type element found.')
-
-            if (not obj.placeable()):
-                # Non-placeable geoms cannot be attached to bodies or be
-                # transformed
-                self._parser.pop()
-                return
-
-            if (self._body is None):
-                # The Geom is independant so it can have its own transform
-                
-                t = self.getTransform()
-                obj.setPosition(t.getPosition())
-                obj.setRotation(t.getRotation())
-            elif (self._transformed):
-                # The Geom is attached to a body so to transform it, it must
-                # by placed in a GeomTransform and its transform is relative
-                # to the body.
-
-                t = self.getTransform(self._body)
-                obj.setPosition(t.getPosition())
-                obj.setRotation(t.getRotation())
-                
-                trans = ode.GeomTransform(self._space)
-                trans.setGeom(obj)
-                trans.setBody(self._body.getODEObject())
-                
-                self.setODEObject(trans)
-            else:
-                obj.setBody(self._body.getODEObject())
             
             self._parser.pop()
+
+    def _setObject(self, kclass, *args):
+        """
+        Create the Geom object and apply transforms. Only call for placeable
+        Geoms.
+        """
+        
+        if (self._body is None):
+            # The Geom is independant so it can have its own transform
+
+            obj = kclass(*((self._space,) + args))
+
+            t = self.getTransform()
+            obj.setPosition(t.getPosition())
+            obj.setRotation(t.getRotation())
+            
+            self.setODEObject(obj)
+            
+        elif (self._transformed):
+            # The Geom is attached to a body so to transform it, it must
+            # by placed in a GeomTransform and its transform is relative
+            # to the body.
+
+            obj = kclass(*((None,) + args))
+
+            t = self.getTransform(self._body)
+            obj.setPosition(t.getPosition())
+            obj.setRotation(t.getRotation())
+            
+            trans = ode.GeomTransform(self._space)
+            trans.setGeom(obj)
+            trans.setBody(self._body.getODEObject())
+            
+            self.setODEObject(trans)
+        else:
+            obj = kclass(*((self._space,) + args))
+            obj.setBody(self._body.getODEObject())
+            self.setODEObject(obj)
 
     def _parseGeomBox(self, attrs):
         def start(name, attrs):
@@ -127,7 +136,7 @@ class Geom(node.TreeNode):
         ly = float(attrs['sizey'])
         lz = float(attrs['sizez'])
 
-        self.setODEObject(ode.GeomBox(self._space, (lx, ly, lz)))
+        self._setObject(ode.GeomBox, (lx, ly, lz))
         self._parser.push(startElement=start, endElement=end)
 
     def _parseGeomCCylinder(self, attrs):
@@ -144,7 +153,7 @@ class Geom(node.TreeNode):
         radius = float(attrs['radius'])
         length = float(attrs['length'])
 
-        self.setODEObject(ode.GeomCCylinder(self._space, radius, length))
+        self._setObject(ode.GeomCCylinder, radius, length)
         self._parser.push(startElement=start, endElement=end)
 
     def _parseGeomSphere(self, attrs):
@@ -160,7 +169,7 @@ class Geom(node.TreeNode):
 
         radius = float(attrs['radius'])
 
-        self.setODEObject(ode.GeomSphere(self._space, radius))
+        self._setObject(ode.GeomSphere, radius)
         self._parser.push(startElement=start, endElement=end)
 
     def _parseGeomPlane(self, attrs):
