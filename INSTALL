@@ -7,12 +7,13 @@ Requirements:
 - Python v2.2 (or higher) 
   http://www.python.org/
 
-- Pyrex 0.9.3 (or higher) 
-  http://www.cosc.canterbury.ac.nz/~greg/python/Pyrex/
-
 - ODE 0.5
   http://ode.org/
 
+- Pyrex 0.9.3 (or higher) 
+  http://www.cosc.canterbury.ac.nz/~greg/python/Pyrex/
+  This is only required for PyODE development; you don't need it to install
+  and run PyODE.
 
 Installation:
 -------------
@@ -37,8 +38,10 @@ that points to the base ODE directory. It might be possible that you have
 to modify this variable so that it points to the actual location on your
 system.
 
-ODE can either be compiled with or without trimesh support. If you disabled
-trimesh support you also have to disable it in this wrapper. You do that
-by setting the variable TRIMESH_SUPPORT to False in the setup script.
-In that case the TriMeshData and GeomTriMesh classes will still be there
-but they will raise a NotImplementedError exception in their constructor.
+ODE can either be compiled with or without trimesh support. The setup script
+checks your ODE user-settings file to determine whether is is supported. If
+trimesh support disabled, PyODE's TriMeshData and GeomTriMesh classes will
+still be there but they will raise a NotImplementedError exception in their
+constructor. If you want to force PyODE to install with trimesh support
+regardless of your ODE user-settings, uncomment the variable
+TRIMESH_SUPPORT_OVERRIDE in setup.py.
