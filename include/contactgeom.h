@@ -5,6 +5,9 @@ class ContactGeom {
 	
 	public:
 
+	ContactGeom() { }
+	ContactGeom(dContactGeom dcg) { cg = dcg; }
+
 	dContactGeom getcg() { return cg; }
 	
 	void setPos(tuple vec);
