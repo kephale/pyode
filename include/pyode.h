@@ -27,6 +27,8 @@ using namespace boost::python;
 #include "spheregeom.h"
 #include "boxgeom.h"
 #include "planegeom.h"
+#include "ccylindergeom.h"
+#include "raygeom.h"
 
 #include "main.h"
 
