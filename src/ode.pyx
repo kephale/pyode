@@ -16,7 +16,9 @@ include "declarations.pyx"
 # The World should keep a reference to joints/bodies, so that they won't
 # be deleted.
 
-"""Python Open Dynamics Engine (ODE) wrapper.
+# Excplicitly assign the module doc string to __doc__
+# (otherwise it won't show up which is probably a "bug" in Pyrex (v0.9.2.1))
+__doc__ = """Python Open Dynamics Engine (ODE) wrapper.
 
 This module contains classes and functions that wrap the functionality
 of the Open Dynamics Engine (ODE) which can be found at 
@@ -40,6 +42,7 @@ Joint classes:
 - UniversalJoint
 - FixedJoint
 - ContactJoint
+- AMotor
 
 Geom classes:
 
@@ -182,6 +185,11 @@ def collide(geom1, geom2):
     return res
 
 def CloseODE():
+    """CloseODE()
+
+    Deallocate some extra memory used by ODE that can not be deallocated
+    using the normal destroy functions.
+    """
     dCloseODE()
 
 ######################################################################
