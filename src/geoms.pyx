@@ -516,6 +516,10 @@ cdef class GeomRay(GeomObject):
 # GeomTransform
 cdef class GeomTransform(GeomObject):
     """GeomTransform.
+
+    A geometry transform "T" is a geom that encapsulates another geom
+    "E", allowing E to be positioned and rotated arbitrarily with
+    respect to its point of reference.
     """
 
     cdef object geom
@@ -529,6 +533,9 @@ cdef class GeomTransform(GeomObject):
             sp = space
             sid = sp.sid
         self.gid = dCreateGeomTransform(sid)
+        # Set cleanup mode to 0 as a contained geom will be deleted
+        # by its Python wrapper class
+        dGeomTransformSetCleanup(self.gid, 0)
 #        if space!=None:
 #            space._addgeom(self)
 
@@ -550,6 +557,12 @@ cdef class GeomTransform(GeomObject):
         return id
 
     def setGeom(self, geom):
+        """setGeom(geom)
+
+        Set the geom that the geometry transform encapsulates. The geom must
+        not be inserted into any space, and must not be associated with any
+        body.
+        """
         cdef long id
         
         id = geom._id()
@@ -557,7 +570,42 @@ cdef class GeomTransform(GeomObject):
         self.geom = geom
 
     def getGeom(self):
+        """getGeom() -> GeomObject
+
+        Get the geom that the geometry transform encapsulates.
+        """
         return self.geom
+
+    def setInfo(self, int mode):
+        """setInfo(mode)
+
+        Set the "information" mode of the geometry transform.
+
+        With mode 0, when a transform object is collided with another
+        object, the geom field of the ContactGeom structure is set to the
+        geom that is encapsulated by the transform object.
+
+        With mode 1, the geom field of the ContactGeom structure is set
+        to the transform object itself.
+
+        @param mode: Information mode (0 or 1)
+        @type mode: int
+        """
+        dGeomTransformSetInfo(self.gid, mode)
+
+    def getInfo(self):
+        """getInfo() -> int
+
+        Get the "information" mode of the geometry transform (0 or 1).
+
+        With mode 0, when a transform object is collided with another
+        object, the geom field of the ContactGeom structure is set to the
+        geom that is encapsulated by the transform object.
+
+        With mode 1, the geom field of the ContactGeom structure is set
+        to the transform object itself.
+        """
+        return dGeomTransformGetInfo(self.gid)
 
 
 include "trimeshdata.pyx"

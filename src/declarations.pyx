@@ -346,6 +346,8 @@ cdef extern from "ode/ode.h":
     dGeomID dGeomTransformGetGeom (dGeomID g)
     void dGeomTransformSetCleanup (dGeomID g, int mode)
     int dGeomTransformGetCleanup (dGeomID g)
+    void dGeomTransformSetInfo (dGeomID g, int mode)
+    int dGeomTransformGetInfo (dGeomID g)
 
     int dCollide (dGeomID o1, dGeomID o2, int flags, dContactGeom *contact, int skip)
 
