@@ -1,0 +1,38 @@
+PyODE - Python-ODE Interface
+
+Introduction
+PyODE provides an object-orientated python interface to the ODE pysics engine (http://opende.sourceforge.net).
+
+API
+The PyODE API is much like the ODE API except that it has been object-orientated so that all ODE's functions (in the form of d<Object><Method>(<ID>, <args>) correspond to <Object>.<Method>(args). E.g:
+
+	ODE				PyODE
+	dWorldCreate(id)		w = World()
+	dBodyCreate(id, world)		b = Body(w)
+
+Case
+PyODE methods names begin with a lower-case letter and each word has upper-case first letter thereafter.
+
+Vectors, Quaternions and Matricies
+All vectors, quaternions and matricies are represented by tuples in PyODE. Unlike ODE, dVector3's are not given by three separate arguments but by one tuple. E.g:
+
+	ODE				PyODE
+	dVector3			(x,y,z)
+	dQuaternion			(n1,n2,n3,n4)
+	dMatrix3			( (a, b, c),
+					  (d, e, f),
+					  (g, h, i) )
+
+	dWorldSetGravity(id, x, y, z)	w.setGravity( (x,y,z) )
+
+Web Site
+http://pyode.sourceforge.net
+
+License
+PyODE is distributed under the GNU Lesser General Public License.
+
+Authors
+Timothy Stranex <perspex@dream.za.net>
+
+Copyright (C) 2003 Timothy Stranex <perspex@dream.za.net>
+
