@@ -23,6 +23,7 @@ BOOST_PYTHON_MODULE(pyode)
 
 	exportSphereGeom();
 	exportBoxGeom();
+	exportPlaneGeom();
 
 	exportMain();
 }

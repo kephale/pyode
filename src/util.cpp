@@ -36,6 +36,11 @@ tuple dVector3_to_tuple(dVector3 vec)
 	return make_tuple(vec[0], vec[1], vec[2]);
 }
 
+tuple dVector4_to_tuple(dVector4 vec)
+{
+	return make_tuple(vec[0], vec[1], vec[2], vec[3]);
+}
+
 tuple dMatrix3_to_tuple(dMatrix3 matrix)
 {
 	return make_tuple(
