@@ -1,4 +1,4 @@
-INCLUDES = $(BOOST_CFLAGS) $(PYTHON_CFLAGS) -ftemplate-depth-100 ../include
+INCLUDES = $(BOOST_CFLAGS) $(PYTHON_CFLAGS) -ftemplate-depth-100 -I../include
 
 bin_PROGRAMS = pyode.so
 
