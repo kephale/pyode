@@ -1,0 +1,5 @@
+2005-03-03  Matthias Baas <baas@ira.uka.de>
+
+	* src\geomobject.pyx (setCollideBits, setCategoryBits): Bits can now also be passed as int.
+	  Updated doc about collide and category bits (which are actually long instead of int).
+

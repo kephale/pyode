@@ -218,9 +218,9 @@ cdef class GeomObject:
         Set the "collide" bitfields for this geom.
 
         @param bits: Collide bit field
-        @type bits: int
+        @type bits: int/long
         """
-        dGeomSetCollideBits(self.gid, bits)
+        dGeomSetCollideBits(self.gid, long(bits))
         
     def setCategoryBits(self, bits):
         """setCategoryBits(bits)
@@ -228,19 +228,19 @@ cdef class GeomObject:
         Set the "category" bitfields for this geom.
 
         @param bits: Category bit field
-        @type bits: int
+        @type bits: int/long
         """
-        dGeomSetCategoryBits(self.gid, bits)
+        dGeomSetCategoryBits(self.gid, long(bits))
 
     def getCollideBits(self):
-        """getCollideBits() -> int
+        """getCollideBits() -> long
 
         Return the "collide" bitfields for this geom.
         """
         return dGeomGetCollideBits(self.gid)
 
     def getCategoryBits(self):
-        """getCategoryBits() -> int
+        """getCategoryBits() -> long
 
         Return the "category" bitfields for this geom.
         """
