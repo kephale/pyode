@@ -6,11 +6,18 @@ cdef class Mass:
     This class stores mass parameters of a rigid body which can be
     accessed through the following attributes:
 
-    - mass: The total mass of the body (float)
-    - c:    The center of gravity position in body frame (3-tuple of floats)
-    - I:    The 3x3 inertia tensor in body frame (3-tuple of 3-tuples (rows))
+     - mass: The total mass of the body (float)
+     - c:    The center of gravity position in body frame (3-tuple of floats)
+     - I:    The 3x3 inertia tensor in body frame (3-tuple of 3-tuples)
 
     This class wraps the dMass structure from the C API.
+
+    @ivar mass: The total mass of the body
+    @ivar c: The center of gravity position in body frame (cx, cy, cz)
+    @ivar I: The 3x3 inertia tensor in body frame ((I11, I12, I13), (I12, I22, I23), (I13, I23, I33))
+    @type mass: float
+    @type c: 3-tuple of floats
+    @type I: 3-tuple of 3-tuples of floats 
     """
     cdef dMass _mass
 
@@ -18,80 +25,137 @@ cdef class Mass:
         dMassSetZero(&self._mass)
 
     def setZero(self):
-        "Set all the mass parameters to zero."
+        """setZero()
+
+        Set all the mass parameters to zero."""
         dMassSetZero(&self._mass)
 
-    def setParameters(self, themass, cgx, cgy, cgz, I11, I22, I33, I12, I13, I23):
-        """Set the mass parameters to the given values.
+    def setParameters(self, mass, cgx, cgy, cgz, I11, I22, I33, I12, I13, I23):
+        """setParameters(mass, cgx, cgy, cgz, I11, I22, I33, I12, I13, I23)
 
-        themass     - Total mass of the body.
-        cgx,cgy,cgz - Center of gravity position in the body frame.
-        Ixx         - Elements of the inertia matrix
-                      [ I11  I12  I13 ]
-                      [ I12  I22  I23 ]
-                      [ I13  I23  I33 ]
+        Set the mass parameters to the given values.
+
+        @param mass: Total mass of the body.
+        @param cgx: Center of gravity position in the body frame (x component).
+        @param cgy: Center of gravity position in the body frame (y component).
+        @param cgz: Center of gravity position in the body frame (z component).
+        @param I11: Inertia tensor
+        @param I22: Inertia tensor
+        @param I33: Inertia tensor
+        @param I12: Inertia tensor
+        @param I13: Inertia tensor
+        @param I23: Inertia tensor
+        @type mass: float
+        @type cgx: float
+        @type cgy: float
+        @type cgz: float
+        @type I11: float
+        @type I22: float
+        @type I33: float
+        @type I12: float
+        @type I13: float
+        @type I23: float
         """
         dMassSetParameters(&self._mass, themass, cgx, cgy, cgz, I11, I22, I33, I12, I13, I23)
 
     def setSphere(self, density, radius):
-        """Set the mass parameters for a sphere.
+        """setSphere(density, radius)
         
         Set the mass parameters to represent a sphere of the given radius
         and density, with the center of mass at (0,0,0) relative to the body.
+
+        @param density: The density of the sphere
+        @param radius: The radius of the sphere
+        @type density: float
+        @type radius: float
         """
         dMassSetSphere(&self._mass, density, radius)
 
-    def setCappedCylinder(self, density, direction, a, b):
-        """Set the mass parameters for a capped cylinder.
+    def setCappedCylinder(self, density, direction, r, h):
+        """setCappedCylinder(density, direction, a, b)
         
         Set the mass parameters to represent a capped cylinder of the
         given parameters and density, with the center of mass at
         (0,0,0) relative to the body. The radius of the cylinder (and
-        the spherical cap) is a. The length of the cylinder (not
-        counting the spherical cap) is b. The cylinder's long axis is
+        the spherical cap) is r. The length of the cylinder (not
+        counting the spherical cap) is h. The cylinder's long axis is
         oriented along the body's x, y or z axis according to the
         value of direction (1=x, 2=y, 3=z).
-        """
-        dMassSetCappedCylinder(&self._mass, density, direction, a, b)
 
-    def setCylinder(self, density, direction, a, b):
-        """Set the mass parameters for a flat-ended cylinder.
+        @param density: The density of the cylinder
+        @param direction: The direction of the cylinder (1=x axis, 2=y axis, 3=z axis)
+        @param r: The radius of the cylinder
+        @param h: The length of the cylinder (without the caps)
+        @type density: float
+        @type direction: int
+        @type r: float
+        @type h: float
+        """
+        dMassSetCappedCylinder(&self._mass, density, direction, r, h)
+
+    def setCylinder(self, density, direction, r, h):
+        """setCylinder(density, direction, r, h)
         
         Set the mass parameters to represent a flat-ended cylinder of
         the given parameters and density, with the center of mass at
-        (0,0,0) relative to the body. The radius of the cylinder is
-        radius. The length of the cylinder is length. The cylinder's
-        long axis is oriented along the body's x, y or z axis
-        according to the value of direction (1=x, 2=y, 3=z).
+        (0,0,0) relative to the body. The radius of the cylinder is r.
+        The length of the cylinder is h. The cylinder's long axis is
+        oriented along the body's x, y or z axis according to the value
+        of direction (1=x, 2=y, 3=z).
+
+        @param density: The density of the cylinder
+        @param direction: The direction of the cylinder (1=x axis, 2=y axis, 3=z axis)
+        @param r: The radius of the cylinder
+        @param h: The length of the cylinder
+        @type density: float
+        @type direction: int
+        @type r: float
+        @type h: float
         """
-        dMassSetCylinder(&self._mass, density, direction, a, b)
+        dMassSetCylinder(&self._mass, density, direction, r, h)
 
     def setBox(self, density, lx, ly, lz):
-        """Set the mass parameters for a box.
+        """setBox(density, lx, ly, lz)
 
         Set the mass parameters to represent a box of the given
         dimensions and density, with the center of mass at (0,0,0)
         relative to the body. The side lengths of the box along the x,
         y and z axes are lx, ly and lz.
+
+        @param density: The density of the box
+        @param lx: The length along the x axis
+        @param ly: The length along the y axis
+        @param lz: The length along the z axis
+        @type density: float
+        @type lx: float
+        @type ly: float
+        @type lz: float
         """
         dMassSetBox(&self._mass, density, lx, ly, lz)
 
     def adjust(self, newmass):
-        """Adjust the total mass.
+        """adjust(newmass)
 
-        Given mass parameters for some object, adjust them so the
-        total mass is now newmass. This is useful when using the setXyz()
-        methods to set the mass parameters for certain objects -
-        they take the object density, not the total mass.
+        Adjust the total mass. Given mass parameters for some object,
+        adjust them so the total mass is now newmass. This is useful
+        when using the setXyz() methods to set the mass parameters for
+        certain objects - they take the object density, not the total
+        mass.
+
+        @param newmass: The new total mass
+        @type newmass: float
         """
         dMassAdjust(&self._mass, newmass)
 
     def translate(self, t):
-        """Adjust mass parameters.
+        """translate(t)
 
-        Given mass parameters for some object, adjust them to
-        represent the object displaced by (x,y,z) relative to the body
-        frame.
+        Adjust mass parameters. Given mass parameters for some object,
+        adjust them to represent the object displaced by (x,y,z)
+        relative to the body frame.
+
+        @param t Translation vector (x, y, z)
+        @type t: 3-tuple of floats
         """
         dMassTranslate(&self._mass, t[0], t[1], t[2])
 
@@ -103,10 +167,13 @@ cdef class Mass:
 #        pass
 
     def add(self, Mass b):
-        """Add the mass b to the mass a.
+        """add(b)
 
-        a must also be a Mass object. Masses can also be added using
+        Add the mass b to the mass object. Masses can also be added using
         the + operator.
+
+        @param b: The mass to add to this mass
+        @type b: Mass
         """
         dMassAdd(&self._mass, &b._mass)
 
