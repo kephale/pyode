@@ -20,11 +20,12 @@ cdef extern from "stdio.h":
     int printf(char*)
 
 # Include the basic floating point type -> dReal  (either float or double)
-include "_precision.pyx"
+#include "_precision.pyx"
     
 cdef extern from "ode/ode.h":
 
-
+    ctypedef double dReal
+    
     # Dummy structs
     cdef struct dxWorld:
         int _dummy
