@@ -26,37 +26,37 @@ http://opende.sourceforge.net.
 
 There are the following classes and functions:
 
-- World
-- Body
-- JointGroup
-- Contact
-- Space
-- Mass
+ - World
+ - Body
+ - JointGroup
+ - Contact
+ - Space
+ - Mass
 
 Joint classes:
 
-- BallJoint
-- HingeJoint
-- Hinge2Joint
-- SliderJoint
-- UniversalJoint
-- FixedJoint
-- ContactJoint
-- AMotor
+ - BallJoint
+ - HingeJoint
+ - Hinge2Joint
+ - SliderJoint
+ - UniversalJoint
+ - FixedJoint
+ - ContactJoint
+ - AMotor
 
 Geom classes:
 
-- GeomSphere
-- GeomBox
-- GeomPlane
-- GeomCCylinder
-- GeomRay
-- GeomTransform
+ - GeomSphere
+ - GeomBox
+ - GeomPlane
+ - GeomCCylinder
+ - GeomRay
+ - GeomTransform
 
 Functions:
 
-- CloseODE()
-- collide()
+ - CloseODE()
+ - collide()
 
 """
 

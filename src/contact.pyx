@@ -4,13 +4,13 @@ cdef class Contact:
     """This class represents a contact between two bodies in one point.
 
     A Contact object stores all the input parameters for a ContactJoint.
-    This class wraps the ODE dContact structure which has 3 components:
+    This class wraps the ODE dContact structure which has 3 components::
 
-    struct dContact {
-      dSurfaceParameters surface;
-      dContactGeom geom;
-      dVector3 fdir1;
-    };    
+     struct dContact {
+       dSurfaceParameters surface;
+       dContactGeom geom;
+       dVector3 fdir1;
+     };    
 
     This wrapper class provides methods to get and set the items of those
     structures.

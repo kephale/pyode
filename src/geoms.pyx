@@ -54,9 +54,12 @@ cdef class GeomObject:
         self.attribs[name]=val
 
     def setBody(self, Body body):
-        """Associate the geom to a body or remove an association.
+        """setBody(body)
+
+        Associate the geom to a body or remove an association.
 
         @param body: The Body object or None.
+        @type body: Body
         """
         
         if body==None:

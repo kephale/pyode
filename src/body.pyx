@@ -146,7 +146,7 @@ cdef class Body:
 
     # setLinearVel
     def setLinearVel(self, vel):
-        """setLinearVel(pos)
+        """setLinearVel(vel)
 
         Set the linear velocity of the body.
 
@@ -168,7 +168,7 @@ cdef class Body:
 
     # setAngularVel
     def setAngularVel(self, vel):
-        """setAngularVel(pos)
+        """setAngularVel(vel)
 
         Set the angular velocity of the body.
 

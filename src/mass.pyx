@@ -154,7 +154,7 @@ cdef class Mass:
         adjust them to represent the object displaced by (x,y,z)
         relative to the body frame.
 
-        @param t Translation vector (x, y, z)
+        @param t: Translation vector (x, y, z)
         @type t: 3-tuple of floats
         """
         dMassTranslate(&self._mass, t[0], t[1], t[2])

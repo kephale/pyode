@@ -16,6 +16,9 @@ cdef extern from "stdlib.h":
     void* malloc(long)
     void free(void*)
 
+cdef extern from "stdio.h":
+    int printf(char*)
+
 # Include the basic floating point type -> dReal  (either float or double)
 include "_precision.pyx"
     
@@ -271,6 +274,11 @@ cdef extern from "ode/ode.h":
     void dSpaceCollide (dSpaceID space, void *data, dNearCallback *callback)
 
     void dHashSpaceSetLevels (dSpaceID space, int minlevel, int maxlevel)
+
+    void dSpaceSetCleanup (dSpaceID space, int mode)
+    int dSpaceGetCleanup (dSpaceID space)
+
+    int dSpaceGetNumGeoms (dSpaceID)
 
     # Geom
     dGeomID dCreateSphere (dSpaceID space, dReal radius)

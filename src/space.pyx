@@ -11,8 +11,8 @@ cdef class Space:
     This Space class can be used for both, a SimpleSpace and a HashSpace
     (see ODE documentation).
 
-    space = Space(type=0)   # Create a SimpleSpace
-    space = Space(type=1)   # Create a HashSpace
+     >>> space = Space(type=0)   # Create a SimpleSpace
+     >>> space = Space(type=1)   # Create a HashSpace
     """
 
     cdef dSpaceID sid
@@ -26,6 +26,7 @@ cdef class Space:
         else:
             self.sid = dHashSpaceCreate(0)
 
+        dSpaceSetCleanup(self.sid, 0)
         _geom_c2py_lut[<long>self.sid]=self
 
     def __init__(self, type=0):
@@ -59,6 +60,13 @@ cdef class Space:
         cdef long id
         id = <long>self.sid
         return id
+
+    def getNumGeoms(self):
+        """getNumGeoms() -> int
+
+        Return the number of geoms contained within the space.
+        """
+        return dSpaceGetNumGeoms(self.sid)
 
     def collide(self, arg, callback):
         """Do collision detection.
