@@ -65,4 +65,4 @@ cdef class TriMeshData:
 
         # Pass the data to ODE
 #        dGeomTriMeshDataBuildSimple(self.tmdid, self.vertex_buffer, numverts, self.face_buffer, numfaces)
-        dGeomTriMeshDataBuildSingle(self.tmdid, self.vertex_buffer, 3*sizeof(dReal), numverts, self.face_buffer, numfaces, 3*sizeof(int), NULL)
+        dGeomTriMeshDataBuildSingle1(self.tmdid, self.vertex_buffer, 3*sizeof(dReal), numverts, self.face_buffer, numfaces, 3*sizeof(int), NULL)

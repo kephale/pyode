@@ -352,7 +352,7 @@ cdef extern from "ode/ode.h":
     # Trimesh
     dTriMeshDataID dGeomTriMeshDataCreate()
     void dGeomTriMeshDataDestroy(dTriMeshDataID g)
-    void dGeomTriMeshDataBuildSingle (dTriMeshDataID g, void* Vertices,
+    void dGeomTriMeshDataBuildSingle1 (dTriMeshDataID g, void* Vertices,
                                 int VertexStride, int VertexCount,
                                 void* Indices, int IndexCount,
                                 int TriStride, void* Normals)
