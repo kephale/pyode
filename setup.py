@@ -128,7 +128,7 @@ if err!=0:
 
 
 # Compile the module
-setup(name = "pyODE",
+setup(name = "PyODE",
       version = "1.0.0",
       description = "Python wrapper for the Open Dynamics Engine",
       author = "see file AUTHORS",
