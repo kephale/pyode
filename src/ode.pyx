@@ -144,8 +144,9 @@ include "space.pyx"
 # Geom classes
 include "geoms.pyx"
 
-# Include the trimesh switch file that either includes the real trimesh
-# wrapper or a dummy wrapper (if trimesh support is not available/desired)
+# Include the generated trimesh switch file that either includes the real
+# trimesh wrapper (trimesh.pyx/trimeshdata.pyx) or a dummy wrapper
+# (trimesh_dummy.pyx) if trimesh support is not available/desired.
 include "_trimesh_switch.pyx"
 
     

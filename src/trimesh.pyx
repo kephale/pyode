@@ -1,5 +1,8 @@
 # Trimesh
 
+# This file is included by _trimesh_switch.pyx if the variable
+# TRIMESH_SUPPORT was set to True in the setup script.
+
 # GeomTriMesh
 cdef class GeomTriMesh(GeomObject):
     """TriMesh object.
