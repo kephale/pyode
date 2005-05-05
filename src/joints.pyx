@@ -397,6 +397,15 @@ cdef class HingeJoint(Joint):
         """
         return dJointGetHingeAngleRate(self.jid)
 
+    # addTorque
+    def addTorque(self, torque):
+        """Applies the torque about the hinge axis.
+
+        @param torque: Torque magnitude
+        @type torque: float
+        """
+        dJointAddHingeTorque(self.jid, torque)
+
     # setParam
     def setParam(self, param, value):
         """setParam(param, value)
@@ -502,6 +511,15 @@ cdef class SliderJoint(Joint):
         Get the time derivative of the position.
         """
         return dJointGetSliderPositionRate(self.jid)
+
+    # addForce
+    def addForce(self, force):
+        """Applies the given force in the slider's direction.
+
+        @param force: Force magnitude
+        @type force: float
+        """
+        dJointAddSliderForce(self.jid, force)
 
     # setParam
     def setParam(self, param, value):
@@ -616,6 +634,17 @@ cdef class UniversalJoint(Joint):
         cdef dVector3 a
         dJointGetUniversalAxis2(self.jid, a)
         return (a[0],a[1],a[2])
+
+    # addTorques
+    def addTorques(self, torque1, torque2):
+        """Applies torque1 about axis 1, and torque2 about axis 2.
+
+        @param torque1: Torque 1 magnitude
+        @param torque2: Torque 2 magnitude
+        @type torque1: float
+        @type torque2: float
+        """
+        dJointAddUniversalTorques(self.jid, torque1, torque2)
 
     # setParam
     def setParam(self, param, value):
@@ -759,6 +788,17 @@ cdef class Hinge2Joint(Joint):
         Get the time derivative of the second hinge-2 angle.
         """
         return dJointGetHinge2Angle2Rate(self.jid)
+
+    # addTorques
+    def addTorques(self, torque1, torque2):
+        """Applies torque1 about axis 1, and torque2 about axis 2.
+
+        @param torque1: Torque 1 magnitude
+        @param torque2: Torque 2 magnitude
+        @type torque1: float
+        @type torque2: float
+        """
+        dJointAddHinge2Torques(self.jid, torque1, torque2)
 
     # setParam
     def setParam(self, param, value):
@@ -975,6 +1015,19 @@ cdef class AMotor(Joint):
         @type anum: int        
         """
         return dJointGetAMotorAngleRate(self.jid, anum)
+
+    # addTorques
+    def addTorques(self, torque0, torque1, torque2):
+        """Applies torques about the AMotor's axes.
+
+        @param torque0: Torque 0 magnitude
+        @param torque1: Torque 1 magnitude
+        @param torque2: Torque 2 magnitude
+        @type torque0: float
+        @type torque1: float
+        @type torque2: float
+        """
+        dJointAddAMotorTorques(self.jid, torque0, torque1, torque2)
 
     # setParam
     def setParam(self, param, value):

@@ -1,3 +1,8 @@
+2005-05-05  Matthias Baas <baas@ira.uka.de>
+
+	* src\joints.pyx (Joints): Added methods to set joint forces/torques directly (section 7.6
+	  in the ODE manual).
+
 2005-03-03  Matthias Baas <baas@ira.uka.de>
 
 	* src\geomobject.pyx (setCollideBits, setCategoryBits): Bits can now also be passed as int.
