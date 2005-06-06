@@ -1,3 +1,11 @@
+2005-06-06  Matthias Baas <baas@ira.uka.de>
+
+	* Creating a Body now requires a World object. Empty Bodies are not
+	  allowed anymore. The ode.environment object now simply holds None
+	  instead of an empty Body. It's now also possible to pass None to
+	  the attach() method.
+	* Added an iterator to iterate over the geoms inside a Space.
+
 2005-05-05  Matthias Baas <baas@ira.uka.de>
 
 	* src\joints.pyx (Joints): Added methods to set joint forces/torques directly (section 7.6

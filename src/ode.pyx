@@ -227,4 +227,5 @@ def CloseODE():
 
 ######################################################################
 
-environment = Body(None)
+#environment = Body(None)
+environment = None

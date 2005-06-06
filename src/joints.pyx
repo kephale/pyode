@@ -131,19 +131,29 @@ cdef class Joint:
     def attach(self, Body body1, Body body2):
         """attach(body1, body2)
 
-        Attach the joint to some new bodies.
+        Attach the joint to some new bodies. A body can be attached
+        to the environment by passing None as second body.
         
-        TODO: What if there's only one body.
-
         @param body1: First body
         @param body2: Second body
         @type body1: Body
         @type body2: Body
         """
+        cdef dBodyID id1, id2
+
+        if body1==None:
+            id1 = NULL
+        else:
+            id1 = body1.bid
+            
+        if body2==None:
+            id2 = NULL
+        else:
+            id2 = body2.bid
 
         self.body1 = body1
         self.body2 = body2
-        dJointAttach(self.jid, body1.bid, body2.bid)
+        dJointAttach(self.jid, id1, id2)
 
     # getBody
     def getBody(self, index):
