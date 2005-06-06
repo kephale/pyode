@@ -102,6 +102,9 @@ cdef class SpaceBase(GeomObject):
         id = <long>self.sid
         return id
 
+    def __len__(self):
+        return self.getNumGeoms()
+
     def __iter__(self):
         return _SpaceIterator(self)
 
