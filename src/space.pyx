@@ -19,6 +19,27 @@
 # LICENSE and LICENSE-BSD for more details. 
 ######################################################################
 
+# _SpaceIterator
+class _SpaceIterator:
+    """Iterates over the geoms inside a Space.
+    """
+
+    def __init__(self, space):
+        self.space = space
+        self.idx = 0
+        
+    def __iter__(self):
+        return self
+
+    def next(self):
+        if self.idx>=self.space.getNumGeoms():
+            raise StopIteration
+        else:
+            res = self.space.getGeom(self.idx)
+            self.idx = self.idx+1
+            return res
+
+
 # SpaceBase
 cdef class SpaceBase(GeomObject):
     """Space class (container for geometry objects).
@@ -80,6 +101,9 @@ cdef class SpaceBase(GeomObject):
         cdef long id
         id = <long>self.sid
         return id
+
+    def __iter__(self):
+        return _SpaceIterator(self)
 
     def add(self, GeomObject geom):
         """add(geom)
@@ -162,7 +186,7 @@ cdef class SpaceBase(GeomObject):
         tup = (callback, arg)
         data = <void*>tup
         dSpaceCollide(self.sid, data, collide_callback)
-        
+
 
 # Callback function for the dSpaceCollide() call in the Space.collide() method
 # The data parameter is a tuple (Python-Callback, Arguments).
