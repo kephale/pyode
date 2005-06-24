@@ -1,3 +1,9 @@
+2005-06-24  Matthias Baas <baas@ira.uka.de>
+
+	* Modified the base joint class so that its possible to store 
+	  arbitrary attributes (as is the case with regular Python classes).
+	  This was suggested in "bug" 1121141.
+
 2005-06-06  Matthias Baas <baas@ira.uka.de>
 
 	* Creating a Body now requires a World object. Empty Bodies are not

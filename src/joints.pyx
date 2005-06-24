@@ -102,12 +102,17 @@ cdef class Joint:
     cdef object body1
     cdef object body2
 
+    # A dictionary with user attributes
+    # (set via __getattr__ and __setattr__)
+    cdef object userattribs
+
     def __new__(self, *a, **kw):
         self.jid = NULL
         self.world = None
         self.feedback = NULL
         self.body1 = None
         self.body2 = None
+        self.userattribs = {}
 
     def __init__(self, *a, **kw):
         raise NotImplementedError, "The Joint base class can't be used directly."
@@ -116,6 +121,21 @@ cdef class Joint:
         self.setFeedback(False)
         if self.jid!=NULL:
             dJointDestroy(self.jid)
+
+    def __getattr__(self, name):
+        try:
+            return self.userattribs[name]
+        except:
+            raise AttributeError, "Joint object has no attribute '%s'"%name
+            
+    def __setattr__(self, name, value):
+        self.userattribs[name] = value
+
+    def __delattr__(self, name):
+        try:
+            del self.userattribs[name]
+        except:
+            raise AttributeError, "Joint object has no attribute '%s'"%name
 
     # _destroyed
     def _destroyed(self):
