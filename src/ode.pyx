@@ -111,6 +111,20 @@ ParamStopCFM2       = 256+8
 ParamSuspensionERP2 = 256+9
 ParamSuspensionCFM2 = 256+10
 
+ParamLoStop3        = 512+0
+ParamHiStop3        = 512+1
+ParamVel3           = 512+2
+ParamFMax3          = 512+3
+ParamFudgeFactor3   = 512+4
+ParamBounce3        = 512+5
+ParamCFM3           = 512+6
+ParamStopERP3       = 512+7
+ParamStopCFM3       = 512+8
+ParamSuspensionERP3 = 512+9
+ParamSuspensionCFM3 = 512+10
+
+ParamGroup = 256
+
 ContactMu2	= 0x001
 ContactFDir1	= 0x002
 ContactBounce	= 0x004

@@ -1,3 +1,7 @@
+2005-09-20  Matthias Baas <baas@ira.uka.de>
+
+	* ode.pyx: Added the ParamX3 parameter names and the ParamGroup definition
+
 2005-06-24  Matthias Baas <baas@ira.uka.de>
 
 	* Modified the base joint class so that its possible to store 
