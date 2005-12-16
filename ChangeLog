@@ -1,3 +1,11 @@
+2005-12-16  Timothy Stranex <timothy.stranex@gmail.com>
+	* setup.py: Modified setup to look for ODE installations in common
+	  locations.
+	* examples/tutorial3.py: Updated with Pierre Gay's changes so that it
+	  does not depend on cgkit or pygame.
+	* tests/test_xode.py: Fixed some instances of testing floats for
+	  equality.
+
 2005-09-20  Matthias Baas <baas@ira.uka.de>
 
 	* ode.pyx: Added the ParamX3 parameter names and the ParamGroup definition

@@ -1,21 +1,30 @@
 # pyODE example 3: Collision detection
 
-import sys, os, random
-import pygame 
-from pygame.locals import *
-from cgtypes import *
+# Originally by Matthias Baas.
+# Updated by Pierre Gay to work without pygame or cgkit.
+
+import sys, os, random, time
 from math import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
+
 import ode
 
+# geometric utility functions
+def scalp (vec, scal):
+    vec[0] *= scal
+    vec[1] *= scal
+    vec[2] *= scal
+
+def length (vec):
+    return sqrt (vec[0]**2 + vec[1]**2 + vec[2]**2)
 
 # prepare_GL
 def prepare_GL():
     """Prepare drawing.
     """
-    
+
     # Viewport
     glViewport(0,0,640,480)
 
@@ -31,8 +40,7 @@ def prepare_GL():
     # Projection
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
-    P = mat4(1).perspective(45,1.3333,0.2,20)
-    glMultMatrixd(P.toList())
+    gluPerspective (45,1.3333,0.2,20)
 
     # Initialize ModelView matrix
     glMatrixMode(GL_MODELVIEW)
@@ -45,33 +53,21 @@ def prepare_GL():
     glEnable(GL_LIGHT0)
 
     # View transformation
-    V = mat4(1).lookAt(1.2*vec3(2,3,4),(0.5,0.5,0), up=(0,1,0))
-    V.rotate(pi,vec3(0,1,0))  
-    V = V.inverse()
-    glMultMatrixd(V.toList())
-
+    gluLookAt (2.4, 3.6, 4.8, 0.5, 0.5, 0, 0, 1, 0)
 
 # draw_body
 def draw_body(body):
     """Draw an ODE body.
     """
-    
+
     x,y,z = body.getPosition()
     R = body.getRotation()
-    T = mat4()
-    T[0,0] = R[0]
-    T[0,1] = R[1]
-    T[0,2] = R[2]
-    T[1,0] = R[3]
-    T[1,1] = R[4]
-    T[1,2] = R[5]
-    T[2,0] = R[6]
-    T[2,1] = R[7]
-    T[2,2] = R[8]
-    T[3] = (x,y,z,1.0)
-
+    rot = [R[0], R[3], R[6], 0.,
+           R[1], R[4], R[7], 0.,
+           R[2], R[5], R[8], 0.,
+           x, y, z, 1.0]
     glPushMatrix()
-    glMultMatrixd(T.toList())
+    glMultMatrixd(rot)
     if body.shape=="box":
         sx,sy,sz = body.boxsize
         glScale(sx, sy, sz)
@@ -102,13 +98,15 @@ def create_box(world, space, density, lx, ly, lz):
 # drop_object
 def drop_object():
     """Drop an object into the scene."""
-    
+
     global bodies, counter, objcount
-    
+
     body = create_box(world, space, 1000, 1.0,0.2,0.2)
     body.setPosition( (random.gauss(0,0.1),3.0,random.gauss(0,0.1)) )
-    m = mat4().rotation(random.uniform(0,2*pi), (0,1,0))
-    body.setRotation(m.toList())
+    theta = random.uniform(0,2*pi)
+    ct = cos (theta)
+    st = sin (theta)
+    body.setRotation([ct, 0., -st, 0., 1., 0., st, 0., ct])
     bodies.append(body)
     counter=0
     objcount+=1
@@ -123,11 +121,12 @@ def explosion():
     global bodies
 
     for b in bodies:
-        p = vec3(b.getPosition())
-        d = p.length()
+        l=b.getPosition ()
+        d = length (l)
         a = max(0, 40000*(1.0-0.2*d*d))
-        p = vec3(p.x/4, p.y, p.z/4)
-        b.addForce(a*p.normalize())
+        l = [l[0] / 4, l[1], l[2] /4]
+        scalp (l, a / length (l))
+        b.addForce(l)
 
 # pull
 def pull():
@@ -138,13 +137,14 @@ def pull():
     the objects won't stick to the ground all the time.
     """
     global bodies, counter
-    
+
     for b in bodies:
-        p = vec3(b.getPosition())
-        b.addForce(-1000*p.normalize())
+        l=list (b.getPosition ())
+        scalp (l, -1000 / length (l))
+        b.addForce(l)
         if counter%60==0:
             b.addForce((0,10000,0))
-    
+
 # Collision callback
 def near_callback(args, geom1, geom2):
     """Callback function for the collide() method.
@@ -165,13 +165,22 @@ def near_callback(args, geom1, geom2):
         j.attach(geom1.getBody(), geom2.getBody())
 
 
+
 ######################################################################
 
-# Initialize pygame
-passed, failed = pygame.init()
+# Initialize Glut
+glutInit ([])
 
 # Open a window
-srf = pygame.display.set_mode((640,480), OPENGL | DOUBLEBUF)
+glutInitDisplayMode (GLUT_RGB | GLUT_DOUBLE)
+
+x = 0
+y = 0
+width = 640
+height = 480
+glutInitWindowPosition (x, y);
+glutInitWindowSize (width, height);
+glutCreateWindow ("testode")
 
 # Create a world object
 world = ode.World()
@@ -199,20 +208,36 @@ running = True
 state = 0
 counter = 0
 objcount = 0
-clk = pygame.time.Clock()
-#frame=1
-while running:
-    events = pygame.event.get()
-    for e in events:
-        if e.type==QUIT:
-            running=False
-        elif e.type==KEYDOWN:
-            running=False
-        elif e.type==MOUSEBUTTONDOWN or e.type==MOUSEMOTION:
-            pass
+lasttime = time.time()
 
-    counter+=1
-    # State 0: Drop objects
+
+# keyboard callback
+def _keyfunc (c, x, y):
+    sys.exit (0)
+
+glutKeyboardFunc (_keyfunc)
+
+# draw callback
+def _drawfunc ():
+    # Draw the scene
+    prepare_GL()
+    for b in bodies:
+        draw_body(b)
+
+    glutSwapBuffers ()
+
+glutDisplayFunc (_drawfunc)
+
+# idle callback
+def _idlefunc ():
+    global counter, state, lasttime
+
+    t = dt - (time.time() - lasttime)
+    if (t > 0):
+        time.sleep(t)
+
+    counter += 1
+
     if state==0:
         if counter==20:
             drop_object()
@@ -228,27 +253,23 @@ while running:
         if counter==500:
             counter=20
 
-    # Draw the scene
-    prepare_GL()
-    for b in bodies:
-        draw_body(b)
-    
-    pygame.display.flip()
-#    pygame.image.save(srf,"delme%04d.bmp"%frame)
-#    frame+=1
+    glutPostRedisplay ()
 
     # Simulate
     n = 2
+
     for i in range(n):
         # Detect collisions and create contact joints
         space.collide((world,contactgroup), near_callback)
 
         # Simulation step
-#        world.step(dt/n)
-        world.quickStep(dt/n)
+        world.step(dt/n)
 
         # Remove all contact joints
         contactgroup.empty()
-    
-    clk.tick(fps)
-    
+
+    lasttime = time.time()
+
+glutIdleFunc (_idlefunc)
+
+glutMainLoop ()
