@@ -1,3 +1,7 @@
+2006-01-17  Matthias Baas <baas@ira.uka.de>
+
+	* geomobject.pyx: Added the getQuaternion()/setQuaternion() methods
+
 2005-12-16  Timothy Stranex <timothy.stranex@gmail.com>
 	* setup.py: Modified setup to look for ODE installations in common
 	  locations.

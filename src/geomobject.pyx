@@ -188,6 +188,38 @@ cdef class GeomObject:
         m = <dReal*>dGeomGetRotation(self.gid)
         return [m[0],m[1],m[2],m[4],m[5],m[6],m[8],m[9],m[10]]
 
+    def getQuaternion(self):
+        """getQuaternion() -> (w,x,y,z)
+
+        Get the current orientation of the geom. If the geom is attached to
+        a body the returned value is the body's orientation.
+        """
+        if not self.placeable():
+            raise ValueError, "Non-placeable geoms do not have an orientation."
+
+        cdef dQuaternion q
+        dGeomGetQuaternion(self.gid, q)
+        return (q[0],q[1],q[2],q[3])
+
+    def setQuaternion(self, q):
+        """setQuaternion(q)
+
+        Set the orientation of the geom. If the geom is attached to a body,
+        the body's orientation will also be changed.
+
+        @param q: Quaternion (w,x,y,z)
+        @type q: 4-sequence of floats
+        """
+        if not self.placeable():
+            raise ValueError, "Cannot set a quaternion on non-placeable geoms."
+
+        cdef dQuaternion cq
+        cq[0] = q[0]
+        cq[1] = q[1]
+        cq[2] = q[2]
+        cq[3] = q[3]
+        dGeomSetQuaternion(self.gid, cq)
+
     def getAABB(self):
         """getAABB() -> 6-tuple
 
