@@ -168,7 +168,7 @@ cdef class SpaceBase(GeomObject):
         return _geom_c2py_lut[<long>gid]
 
     def collide(self, arg, callback):
-        """Do collision detection.
+        """collide(arg, callback)
 
         Call a callback function one or more times, for all
         potentially intersecting objects in the space. The callback
@@ -182,6 +182,10 @@ cdef class SpaceBase(GeomObject):
         function can call the function collide() (not the Space
         method) on geom1 and geom2, perhaps first determining
         whether to collide them at all based on other information.
+
+        @param arg: A user argument that is passed to the callback function
+        @param callback: Callback function
+        @type callback: callable
         """
         
         cdef void* data

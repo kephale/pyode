@@ -429,7 +429,9 @@ cdef class HingeJoint(Joint):
 
     # addTorque
     def addTorque(self, torque):
-        """Applies the torque about the hinge axis.
+        """addTorque(torque)
+
+        Applies the torque about the hinge axis.
 
         @param torque: Torque magnitude
         @type torque: float
@@ -544,7 +546,9 @@ cdef class SliderJoint(Joint):
 
     # addForce
     def addForce(self, force):
-        """Applies the given force in the slider's direction.
+        """addForce(force)
+
+        Applies the given force in the slider's direction.
 
         @param force: Force magnitude
         @type force: float
@@ -667,7 +671,9 @@ cdef class UniversalJoint(Joint):
 
     # addTorques
     def addTorques(self, torque1, torque2):
-        """Applies torque1 about axis 1, and torque2 about axis 2.
+        """addTorques(torque1, torque2)
+
+        Applies torque1 about axis 1, and torque2 about axis 2.
 
         @param torque1: Torque 1 magnitude
         @param torque2: Torque 2 magnitude
@@ -821,7 +827,9 @@ cdef class Hinge2Joint(Joint):
 
     # addTorques
     def addTorques(self, torque1, torque2):
-        """Applies torque1 about axis 1, and torque2 about axis 2.
+        """addTorques(torque1, torque2)
+
+        Applies torque1 about axis 1, and torque2 about axis 2.
 
         @param torque1: Torque 1 magnitude
         @param torque2: Torque 2 magnitude
@@ -1048,7 +1056,9 @@ cdef class AMotor(Joint):
 
     # addTorques
     def addTorques(self, torque0, torque1, torque2):
-        """Applies torques about the AMotor's axes.
+        """addTorques(torque0, torque1, torque2)
+
+        Applies torques about the AMotor's axes.
 
         @param torque0: Torque 0 magnitude
         @param torque1: Torque 1 magnitude
