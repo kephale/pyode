@@ -181,7 +181,9 @@ include "_trimesh_switch.pyx"
 
     
 def collide(geom1, geom2):
-    """Generate contact information for two objects.
+    """collide(geom1, geom2) -> contacts
+
+    Generate contact information for two objects.
 
     Given two geometry objects that potentially touch (geom1 and geom2),
     generate contact information for them. Internally, this just calls
@@ -197,6 +199,12 @@ def collide(geom1, geom2):
 
     If the objects touch, this returns a list of Contact objects,
     otherwise it returns an empty list.
+
+    @param geom1: First Geom
+    @type geom1: GeomObject
+    @param geom2: Second Geom
+    @type geom2: GeomObject
+    @returns: Returns a list of Contact objects.
     """
     
     cdef dContactGeom c[150]
@@ -219,9 +227,45 @@ def collide(geom1, geom2):
 
     return res
 
+def collide2(geom1, geom2, arg, callback):
+    """collide2(geom1, geom2, arg, callback)
+    
+    Calls the callback for all potentially intersecting pairs that contain
+    one geom from geom1 and one geom from geom2.
+
+    @param geom1: First Geom
+    @type geom1: GeomObject
+    @param geom2: Second Geom
+    @type geom2: GeomObject
+    @param arg: A user argument that is passed to the callback function
+    @param callback: Callback function
+    @type callback: callable    
+    """
+    cdef void* data
+    cdef object tup
+    cdef long id1
+    cdef long id2
+
+    id1 = geom1._id()
+    id2 = geom2._id()
+    
+    tup = (callback, arg)
+    data = <void*>tup
+    # collide_callback is defined in space.pyx
+    dSpaceCollide2(<dGeomID>id1, <dGeomID>id2, data, collide_callback)
+
+
 def areConnected(Body body1, Body body2):
-    """Return True if the two bodies are connected together by a joint,
-       otherwise return False.
+    """areConnected(body1, body2) -> bool
+
+    Return True if the two bodies are connected together by a joint,
+    otherwise return False.
+
+    @param body1: First body
+    @type body1: Body
+    @param body2: Second body
+    @type body2: Body
+    @returns: True if the bodies are connected
     """
 
     if (body1 is environment):

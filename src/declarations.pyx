@@ -320,6 +320,7 @@ cdef extern from "ode/ode.h":
     void dSpaceRemove (dSpaceID, dGeomID)
     int dSpaceQuery (dSpaceID, dGeomID)
     void dSpaceCollide (dSpaceID space, void *data, dNearCallback *callback)
+    void dSpaceCollide2 (dGeomID o1, dGeomID o2, void *data, dNearCallback *callback)
 
     void dHashSpaceSetLevels (dSpaceID space, int minlevel, int maxlevel)
     void dHashSpaceGetLevels (dSpaceID space, int *minlevel, int *maxlevel)

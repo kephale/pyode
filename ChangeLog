@@ -1,3 +1,10 @@
+2006-04-13  Matthias Baas <baas@ira.uka.de>
+
+	* space.pyx, joints.pyx: Fixed some doc strings that generated
+	  epydoc warnings.
+	* ode.pyx: Added the collide2() function (and fixed some more doc
+	  strings).
+	
 2006-01-17  Matthias Baas <baas@ira.uka.de>
 
 	* geomobject.pyx: Added the getQuaternion()/setQuaternion() methods
