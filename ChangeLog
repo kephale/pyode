@@ -1,3 +1,9 @@
+2006-05-30  Matthias Baas <baas@ira.uka.de>
+
+	* mass.pyx: Applied Chris Bainbridge's patch that adds the 
+	  Mass.setBoxTotal() method, and while I was at it I added
+	  the other set*Total() methods, too.
+
 2006-04-13  Matthias Baas <baas@ira.uka.de>
 
 	* space.pyx, joints.pyx: Fixed some doc strings that generated

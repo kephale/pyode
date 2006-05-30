@@ -90,6 +90,19 @@ cdef class Mass:
         """
         dMassSetSphere(&self._mass, density, radius)
 
+    def setSphereTotal(self, total_mass, radius):
+        """setSphereTotal(total_mass, radius)
+        
+        Set the mass parameters to represent a sphere of the given radius
+        and mass, with the center of mass at (0,0,0) relative to the body.
+
+        @param total_mass: The total mass of the sphere
+        @param radius: The radius of the sphere
+        @type total_mass: float
+        @type radius: float
+        """
+        dMassSetSphere(&self._mass, total_mass, radius)
+
     def setCappedCylinder(self, density, direction, r, h):
         """setCappedCylinder(density, direction, r, h)
         
@@ -112,6 +125,28 @@ cdef class Mass:
         """
         dMassSetCappedCylinder(&self._mass, density, direction, r, h)
 
+    def setCappedCylinderTotal(self, total_mass, direction, r, h):
+        """setCappedCylinderTotal(total_mass, direction, r, h)
+        
+        Set the mass parameters to represent a capped cylinder of the
+        given parameters and mass, with the center of mass at
+        (0,0,0) relative to the body. The radius of the cylinder (and
+        the spherical cap) is r. The length of the cylinder (not
+        counting the spherical cap) is h. The cylinder's long axis is
+        oriented along the body's x, y or z axis according to the
+        value of direction (1=x, 2=y, 3=z).
+
+        @param total_mass: The total mass of the cylinder
+        @param direction: The direction of the cylinder (1=x axis, 2=y axis, 3=z axis)
+        @param r: The radius of the cylinder
+        @param h: The length of the cylinder (without the caps)
+        @type total_mass: float
+        @type direction: int
+        @type r: float
+        @type h: float
+        """
+        dMassSetCappedCylinderTotal(&self._mass, total_mass, direction, r, h)
+
     def setCylinder(self, density, direction, r, h):
         """setCylinder(density, direction, r, h)
         
@@ -133,6 +168,27 @@ cdef class Mass:
         """
         dMassSetCylinder(&self._mass, density, direction, r, h)
 
+    def setCylinderTotal(self, total_mass, direction, r, h):
+        """setCylinderTotal(total_mass, direction, r, h)
+        
+        Set the mass parameters to represent a flat-ended cylinder of
+        the given parameters and mass, with the center of mass at
+        (0,0,0) relative to the body. The radius of the cylinder is r.
+        The length of the cylinder is h. The cylinder's long axis is
+        oriented along the body's x, y or z axis according to the value
+        of direction (1=x, 2=y, 3=z).
+
+        @param total_mass: The total mass of the cylinder
+        @param direction: The direction of the cylinder (1=x axis, 2=y axis, 3=z axis)
+        @param r: The radius of the cylinder
+        @param h: The length of the cylinder
+        @type total_mass: float
+        @type direction: int
+        @type r: float
+        @type h: float
+        """
+        dMassSetCylinderTotal(&self._mass, total_mass, direction, r, h)
+
     def setBox(self, density, lx, ly, lz):
         """setBox(density, lx, ly, lz)
 
@@ -151,6 +207,25 @@ cdef class Mass:
         @type lz: float
         """
         dMassSetBox(&self._mass, density, lx, ly, lz)
+
+    def setBoxTotal(self, total_mass, lx, ly, lz):
+        """setBoxTotal(total_mass, lx, ly, lz)
+
+        Set the mass parameters to represent a box of the given
+        dimensions and mass, with the center of mass at (0,0,0)
+        relative to the body. The side lengths of the box along the x,
+        y and z axes are lx, ly and lz.
+
+        @param total_mass: The total mass of the box
+        @param lx: The length along the x axis
+        @param ly: The length along the y axis
+        @param lz: The length along the z axis
+        @type total_mass: float
+        @type lx: float
+        @type ly: float
+        @type lz: float
+        """
+        dMassSetBoxTotal(&self._mass, total_mass, lx, ly, lz)
 
     def adjust(self, newmass):
         """adjust(newmass)
