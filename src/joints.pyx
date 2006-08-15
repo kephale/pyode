@@ -55,6 +55,8 @@ cdef class JointGroup:
 
     def __dealloc__(self):
         if self.gid!=NULL:
+            for j in self.jointlist:
+                j._destroyed()
             dJointGroupDestroy(self.gid)
 
     # empty

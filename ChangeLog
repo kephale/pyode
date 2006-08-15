@@ -1,3 +1,9 @@
+2006-08-15  Matthias Baas <baas@ira.uka.de>
+
+	* joints.pyx: The JointGroup.__dealloc__() method now notifies
+	  the contained joints about the destruction of the ODE joints
+	  (i.e. _destroyed() is called).
+
 2006-05-30  Matthias Baas <baas@ira.uka.de>
 
 	* mass.pyx: Applied Chris Bainbridge's patch that adds the 
