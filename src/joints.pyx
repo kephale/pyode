@@ -1080,3 +1080,120 @@ cdef class AMotor(Joint):
         return dJointGetAMotorParam(self.jid, param)
 
 
+# LMotor
+cdef class LMotor(Joint):
+    """LMotor joint.
+    
+    Constructor::
+    
+      LMotor(world, jointgroup=None)
+    """
+
+    def __new__(self, World world not None, jointgroup=None):
+        cdef JointGroup jg
+        cdef dJointGroupID jgid
+
+        jgid = NULL
+        if jointgroup!=None:
+            jg = jointgroup
+            jgid = jg.gid
+        self.jid = dJointCreateLMotor(world.wid, jgid)
+
+    def __init__(self, World world not None, jointgroup=None):
+        self.world = world
+        if jointgroup!=None:
+            jointgroup._addjoint(self)
+            
+    # setNumAxes
+    def setNumAxes(self, int num):
+        """setNumAxes(num)
+
+        Set the number of angular axes that will be controlled by the LMotor.
+        num may be in the range from 0 to 3.
+
+        @param num: Number of axes (0-3)
+        @type num: int
+        """
+        dJointSetLMotorNumAxes(self.jid, num)
+
+    # getNumAxes
+    def getNumAxes(self):
+        """getNumAxes() -> int
+
+        Get the number of angular axes that are controlled by the LMotor.
+        """
+        return dJointGetLMotorNumAxes(self.jid)
+
+    # setAxis
+    def setAxis(self, int anum, int rel, axis):
+        """setAxis(anum, rel, axis)
+
+        Set an LMotor axis.
+
+        The anum argument selects the axis to change (0,1 or 2).
+
+	rel is (in ODE 0.7) ignored for LMotors.
+
+        @param anum: Axis number
+        @param rel: Relative orientation mode
+        @param axis: Axis
+        @type anum: int
+        @type rel: int
+        @type axis: 3-sequence of floats
+        """
+        dJointSetLMotorAxis(self.jid, anum, rel, axis[0], axis[1], axis[2])
+
+    # getAxis
+    def getAxis(self, int anum):
+        """getAxis(anum)
+
+        Get an LMotor axis.
+
+        @param anum: Axis index (0-2)
+        @type anum: int        
+        """
+        cdef dVector3 a
+        dJointGetLMotorAxis(self.jid, anum, a)
+        return (a[0],a[1],a[2])
+
+    # setParam
+    def setParam(self, param, value):
+        dJointSetLMotorParam(self.jid, param, value)
+
+    # getParam
+    def getParam(self, param):
+        return dJointGetLMotorParam(self.jid, param)
+
+
+# Plane2DJoint
+cdef class Plane2DJoint(Joint):
+    """Plane-2D Joint.
+
+    Constructor::
+    
+      Plane2DJoint(world, jointgroup=None)    
+    """
+
+    def __new__(self, World world not None, jointgroup=None):
+        cdef JointGroup jg
+        cdef dJointGroupID jgid
+
+        jgid=NULL
+        if jointgroup!=None:
+            jg=jointgroup
+            jgid=jg.gid
+        self.jid = dJointCreatePlane2D(world.wid, jgid)
+
+    def __init__(self, World world not None, jointgroup=None):
+        self.world = world
+        if jointgroup!=None:
+            jointgroup._addjoint(self)
+            
+    def setXParam(self, param, value):
+        dJointSetPlane2DXParam(self.jid, param, value)
+        
+    def setYParam(self, param, value):
+        dJointSetPlane2DYParam(self.jid, param, value)
+        
+    def setAngleParam(self, param, value):
+        dJointSetPlane2DAngleParam(self.jid, param, value)

@@ -1,3 +1,13 @@
+2006-11-09  Matthias Baas <baas@ira.uka.de>
+
+	* joints.pyx: Applied a patch from the mailing list that adds support
+	  for the LMotor (thanks to Ethan Glasser-Camp).
+	* joints.pyx: Applied a patch from the mailing list that adds support
+	  for the Plane2DJoint (thanks to Leonard Ritter).
+
+	These changes requires a more recent version of ODE than 0.5 
+	(I've switched to v0.7 now).
+
 2006-08-15  Matthias Baas <baas@ira.uka.de>
 
 	* joints.pyx: The JointGroup.__dealloc__() method now notifies

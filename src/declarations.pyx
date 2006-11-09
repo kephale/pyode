@@ -212,6 +212,8 @@ cdef extern from "ode/ode.h":
     dJointID dJointCreateFixed (dWorldID, dJointGroupID)
     dJointID dJointCreateNull (dWorldID, dJointGroupID)
     dJointID dJointCreateAMotor (dWorldID, dJointGroupID)
+    dJointID dJointCreateLMotor (dWorldID, dJointGroupID)
+    dJointID dJointCreatePlane2D (dWorldID, dJointGroupID)
 
     void dJointDestroy (dJointID)
 
@@ -250,7 +252,10 @@ cdef extern from "ode/ode.h":
     void dJointSetAMotorParam (dJointID, int parameter, dReal value)
     void dJointSetAMotorMode (dJointID, int mode)
     void dJointAddAMotorTorques (dJointID, dReal torque1, dReal torque2, dReal torque3)
-
+    void dJointSetLMotorAxis (dJointID, int anum, int rel, dReal x, dReal y, dReal z)
+    void dJointSetLMotorNumAxes (dJointID, int num)
+    void dJointSetLMotorParam (dJointID, int parameter, dReal value)
+    
     void dJointGetBallAnchor (dJointID, dVector3 result)
     void dJointGetBallAnchor2 (dJointID, dVector3 result)
     void dJointGetHingeAnchor (dJointID, dVector3 result)
@@ -283,6 +288,12 @@ cdef extern from "ode/ode.h":
     dReal dJointGetAMotorAngleRate (dJointID, int anum)
     dReal dJointGetAMotorParam (dJointID, int parameter)
     int dJointGetAMotorMode (dJointID)
+    int dJointGetLMotorNumAxes (dJointID)
+    void dJointGetLMotorAxis (dJointID, int anum, dVector3 result)
+    dReal dJointGetLMotorParam (dJointID, int parameter)
+    void dJointSetPlane2DXParam (dJointID, int parameter, dReal value)
+    void dJointSetPlane2DYParam (dJointID, int parameter, dReal value)
+    void dJointSetPlane2DAngleParam (dJointID, int parameter, dReal value)
 
     void dJointSetFeedback (dJointID, dJointFeedback *)
     dJointFeedback *dJointGetFeedback (dJointID)

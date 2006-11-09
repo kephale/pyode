@@ -55,6 +55,7 @@ Joint classes:
  - FixedJoint
  - ContactJoint
  - AMotor
+ - Plane2DJoint
 
 Geom classes:
 
