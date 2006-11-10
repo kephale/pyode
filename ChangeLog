@@ -1,3 +1,12 @@
+2006-11-10  Matthias Baas <baas@ira.uka.de>
+
+	* joints.pyx, geoms.pyx: Applied some more patches by 
+	  Ethan Glasser-Camp (switched from the ccylinder functions to
+	  the capsule functions and renamed the GeomCCylinder to GeomCapsule.
+	  For backwards compatibility, the name GeomCCylinder is still
+	  available and is an alias for GeomCapsule. Added support for
+	  GeomCylinder (the uncapped one)).
+
 2006-11-09  Matthias Baas <baas@ira.uka.de>
 
 	* joints.pyx: Applied a patch from the mailing list that adds support
