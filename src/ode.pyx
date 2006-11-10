@@ -55,6 +55,7 @@ Joint classes:
  - FixedJoint
  - ContactJoint
  - AMotor
+ - LMotor
  - Plane2DJoint
 
 Geom classes:
@@ -62,7 +63,7 @@ Geom classes:
  - GeomSphere
  - GeomBox
  - GeomPlane
- - GeomCCylinder
+ - GeomCapsule
  - GeomRay
  - GeomTransform
  - GeomTriMesh / TriMeshData

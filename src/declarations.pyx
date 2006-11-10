@@ -353,23 +353,23 @@ cdef extern from "ode/ode.h":
     dGeomID dCreateSphere (dSpaceID space, dReal radius)
     dGeomID dCreateBox (dSpaceID space, dReal lx, dReal ly, dReal lz)
     dGeomID dCreatePlane (dSpaceID space, dReal a, dReal b, dReal c, dReal d)
-    dGeomID dCreateCCylinder (dSpaceID space, dReal radius, dReal length)
+    dGeomID dCreateCapsule (dSpaceID space, dReal radius, dReal length)
     dGeomID dCreateGeomGroup (dSpaceID space)
 
     void dGeomSphereSetRadius (dGeomID sphere, dReal radius)
     void dGeomBoxSetLengths (dGeomID box, dReal lx, dReal ly, dReal lz)
     void dGeomPlaneSetParams (dGeomID plane, dReal a, dReal b, dReal c, dReal d)
-    void dGeomCCylinderSetParams (dGeomID ccylinder, dReal radius, dReal length)
+    void dGeomCapsuleSetParams (dGeomID ccylinder, dReal radius, dReal length)
 
     dReal dGeomSphereGetRadius (dGeomID sphere)
     void  dGeomBoxGetLengths (dGeomID box, dVector3 result)
     void  dGeomPlaneGetParams (dGeomID plane, dVector4 result)
-    void  dGeomCCylinderGetParams (dGeomID ccylinder, dReal *radius, dReal *length)
+    void  dGeomCapsuleGetParams (dGeomID ccylinder, dReal *radius, dReal *length)
 
     dReal dGeomSpherePointDepth (dGeomID sphere, dReal x, dReal y, dReal z)
     dReal dGeomBoxPointDepth (dGeomID box, dReal x, dReal y, dReal z)
     dReal dGeomPlanePointDepth (dGeomID plane, dReal x, dReal y, dReal z)
-    dReal dGeomCCylinderPointDepth (dGeomID ccylinder, dReal x, dReal y, dReal z)
+    dReal dGeomCapsulePointDepth (dGeomID ccylinder, dReal x, dReal y, dReal z)
 
     dGeomID dCreateRay (dSpaceID space, dReal length)
     void dGeomRaySetLength (dGeomID ray, dReal length)

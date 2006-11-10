@@ -1131,8 +1131,12 @@ cdef class LMotor(Joint):
         Set an LMotor axis.
 
         The anum argument selects the axis to change (0,1 or 2).
+        Each axis can have one of three "relative orientation" modes,
+        selected by rel:
 
-	rel is (in ODE 0.7) ignored for LMotors.
+        0: The axis is anchored to the global frame. 
+        1: The axis is anchored to the first body. 
+        2: The axis is anchored to the second body.
 
         @param anum: Axis number
         @param rel: Relative orientation mode

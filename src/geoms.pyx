@@ -209,8 +209,8 @@ cdef class GeomPlane(GeomObject):
         return dGeomPlanePointDepth(self.gid, p[0], p[1], p[2])
 
 
-# GeomCCylinder
-cdef class GeomCCylinder(GeomObject):
+# GeomCapsule
+cdef class GeomCapsule(GeomObject):
     """Capped cylinder geometry.
 
     This class represents a capped cylinder aligned along the local Z axis
@@ -218,7 +218,7 @@ cdef class GeomCCylinder(GeomObject):
 
     Constructor::
     
-      GeomCCylinder(space=None, radius=0.5, length=1.0)
+      GeomCapsule(space=None, radius=0.5, length=1.0)
 
     The length parameter does not include the caps.
     """
@@ -231,7 +231,7 @@ cdef class GeomCCylinder(GeomObject):
         if space!=None:
             sp = space
             sid = sp.sid
-        self.gid = dCreateCCylinder(sid, radius, length)
+        self.gid = dCreateCapsule(sid, radius, length)
 #        if space!=None:
 #            space._addgeom(self)
 
@@ -250,11 +250,11 @@ cdef class GeomCCylinder(GeomObject):
         return id
 
     def setParams(self, radius, length):
-        dGeomCCylinderSetParams(self.gid, radius, length)
+        dGeomCapsuleSetParams(self.gid, radius, length)
 
     def getParams(self):
         cdef dReal radius, length
-        dGeomCCylinderGetParams(self.gid, &radius, &length)
+        dGeomCapsuleGetParams(self.gid, &radius, &length)
         return (radius, length)
 
     def pointDepth(self, p):
@@ -268,7 +268,9 @@ cdef class GeomCCylinder(GeomObject):
         @param p: Point
         @type p: 3-sequence of floats
         """
-        return dGeomCCylinderPointDepth(self.gid, p[0], p[1], p[2])
+        return dGeomCapsulePointDepth(self.gid, p[0], p[1], p[2])
+
+GeomCCylinder = GeomCapsule # backwards compatibility
 
 
 # GeomRay
