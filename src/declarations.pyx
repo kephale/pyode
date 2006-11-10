@@ -354,17 +354,20 @@ cdef extern from "ode/ode.h":
     dGeomID dCreateBox (dSpaceID space, dReal lx, dReal ly, dReal lz)
     dGeomID dCreatePlane (dSpaceID space, dReal a, dReal b, dReal c, dReal d)
     dGeomID dCreateCapsule (dSpaceID space, dReal radius, dReal length)
+    dGeomID dCreateCylinder (dSpaceID space, dReal radius, dReal length)
     dGeomID dCreateGeomGroup (dSpaceID space)
 
     void dGeomSphereSetRadius (dGeomID sphere, dReal radius)
     void dGeomBoxSetLengths (dGeomID box, dReal lx, dReal ly, dReal lz)
     void dGeomPlaneSetParams (dGeomID plane, dReal a, dReal b, dReal c, dReal d)
     void dGeomCapsuleSetParams (dGeomID ccylinder, dReal radius, dReal length)
+    void dGeomCylinderSetParams (dGeomID ccylinder, dReal radius, dReal length)
 
     dReal dGeomSphereGetRadius (dGeomID sphere)
     void  dGeomBoxGetLengths (dGeomID box, dVector3 result)
     void  dGeomPlaneGetParams (dGeomID plane, dVector4 result)
     void  dGeomCapsuleGetParams (dGeomID ccylinder, dReal *radius, dReal *length)
+    void  dGeomCylinderGetParams (dGeomID ccylinder, dReal *radius, dReal *length)
 
     dReal dGeomSpherePointDepth (dGeomID sphere, dReal x, dReal y, dReal z)
     dReal dGeomBoxPointDepth (dGeomID box, dReal x, dReal y, dReal z)

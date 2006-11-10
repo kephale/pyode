@@ -273,6 +273,55 @@ cdef class GeomCapsule(GeomObject):
 GeomCCylinder = GeomCapsule # backwards compatibility
 
 
+# GeomCylinder
+cdef class GeomCylinder(GeomObject):
+    """Plain cylinder geometry.
+
+    This class represents an uncapped cylinder aligned along the local Z axis
+    and centered at the origin.
+
+    Constructor::
+    
+      GeomCylinder(space=None, radius=0.5, length=1.0)
+    """
+
+    def __new__(self, space=None, radius=0.5, length=1.0):
+        cdef SpaceBase sp
+        cdef dSpaceID sid
+        
+        sid=NULL
+        if space!=None:
+            sp = space
+            sid = sp.sid
+        self.gid = dCreateCylinder(sid, radius, length)
+#        if space!=None:
+#            space._addgeom(self)
+
+        _geom_c2py_lut[<long>self.gid]=self
+
+    def __init__(self, space=None, radius=0.5, length=1.0):
+        self.space = space
+        self.body = None
+
+    def placeable(self):
+        return True
+
+    def _id(self):
+        cdef long id
+        id = <long>self.gid
+        return id
+
+    def setParams(self, radius, length):
+        dGeomCylinderSetParams(self.gid, radius, length)
+
+    def getParams(self):
+        cdef dReal radius, length
+        dGeomCylinderGetParams(self.gid, &radius, &length)
+        return (radius, length)
+
+    ## dGeomCylinderPointDepth not implemented upstream in ODE 0.7
+
+
 # GeomRay
 cdef class GeomRay(GeomObject):
     """Ray object.

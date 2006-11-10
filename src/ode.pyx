@@ -64,6 +64,7 @@ Geom classes:
  - GeomBox
  - GeomPlane
  - GeomCapsule
+ - GeomCylinder
  - GeomRay
  - GeomTransform
  - GeomTriMesh / TriMeshData
