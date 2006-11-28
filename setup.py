@@ -2,241 +2,155 @@
 # setup script for the Python wrapper of ODE
 ######################################################################
 
-# Note: ODE itself must already be compiled
-
-# Set to the base of your ODE installation.
-#ODE_BASE = '../ode'
-
-# Set to the location of your ODE user-settings file.
-#USER_SETTINGS = '../ode/config/user-settings'
-
-# Set to True or False to force trimesh support to be enabled or disabled.
-#TRIMESH_SUPPORT_OVERRIDE = True
-
-######################################################################
-
 from distutils.core import setup, Extension
 import distutils.sysconfig
 import shutil, os, os.path, sys, glob
 from stat import *
 
+# Include directories
+INC_DIRS = []
+# Library directories
+LIB_DIRS = []
+# Libraries to link with
+LIBS = []
+# Additional compiler arguments
+CC_ARGS = []
+# Additional linker arguments
+LINK_ARGS = []
 
-base = []
+# If your version of ODE was compiled with OPCODE (trimesh support) enabled,
+# this should be set to True.
+TRIMESH_ENABLE = True
 
-# Windows?
+######################################################################
+# Windows specific settings
+######################################################################
 if sys.platform=="win32":
 
-    try:
-        base = [ODE_BASE]
-    except NameError:
-		base = []
-		base.append("../ode_single_trimesh")
-		base.append("../ode_double_notrimesh")
+   ODE_BASE = r"insert_your_path_here"
+   INC_DIRS += [os.path.join(ODE_BASE, "include")]
+   LIB_DIRS += [os.path.join(ODE_BASE, "lib", "releaselib")]
 
-    LIBS     = ["ode", "user32"]  # user32 because of the MessageBox() call
-    CC_ARGS  = ["/ML"]
+   LIBS     += ["ode", "user32"]  # user32 because of the MessageBox() call
+   CC_ARGS  += ["/ML"]
+   LINK_ARGS += ["/NODEFAULTLIB:LIBCMT"]
 
-# Linux (and other)
+######################################################################
+# Linux (and other) specific settings
+######################################################################
 else:
 
-    try:
-		base = [ODE_BASE]
-    except NameError:
-		base = []
-		base.append("/usr")
-		base.append("/usr/local")
-		base.append("../ode")
+   for base in ["/usr", "/usr/local"]:
+      INC_DIRS += [os.path.join(base, "include")]
+      LIB_DIRS += [os.path.join(base, "lib")]
 
-    LIBS     = ["ode", "stdc++"]
-    CC_ARGS  = []
+   LIBS += ["ode", "stdc++"]
 
-
-# Look for an ODE user-settings file.
-def findODEConfig(prefix):
-	try:
-		suffix = [USER_SETTINGS]
-		prefix = ''
-	except NameError:
-		suffix = [os.path.join('config', 'user-settings'),
-				  os.path.join('include', 'ode', 'config', 'user-settings'),
-				  os.path.join('share', 'ode-0.5', 'config', 'user-settings')]
-
-	for s in suffix:
-		path = os.path.normpath(os.path.join(prefix, s))
-		if (os.path.exists(path)):
-			return path
-
-	return None
-
-# Find an ODE installation.
-ODE_BASE = None
-for path in base:
-	if (not os.path.exists(path)):
-		continue
-
-	c = findODEConfig(path)
-	if (c is None):
-		continue
-
-	if (not os.path.exists(os.path.join(path, 'include'))):
-		continue
-
-	if (not os.path.exists(os.path.join(path, 'lib'))):
-		continue
-
-	ODE_BASE = path
-	break
-
-
-if (ODE_BASE is None):
-	print
-	print "Error: ODE installation not found."
-	print
-	print "The following installation bases were checked:"
-	for path in base:
-		print "    -", path
-	print
-	print 'This Python ODE wrapper assumes that you have a compiled version of'
-	print 'the ODE library already somewhere on your system. The path to the'
-	print 'ODE installation has to be set in the setup script via the variable'
-	print 'ODE_BASE and the path to the user-settings file has to be set via'
-	print 'the variable USER_SETTINGS. Please change these variables so that'
-	print 'they point to the actual location of your ODE installation.'
-	sys.exit(1)
-
-
-print 'Using "%s" as base of ODE installation.' % ODE_BASE
-
-
-INC_DIRS = [os.path.join(ODE_BASE, "include")]
-LIB_DIRS = [os.path.join(ODE_BASE, "lib")]
 
 ######################################################################
-
-def readODEConfig():
-    config = {}
-
-    filename = findODEConfig(ODE_BASE)
-    print 'Reading ODE user-settings from "%s".' % filename
-
-    try:
-        f = file(filename)
-    except IOError, e:
-        print "ERROR:", e
-        raise RuntimeError
-
-    for line in f.readlines():
-        s = line.strip()
-
-        # remove comments
-        i = s.find('#')
-        if (i != -1):
-            s = s[:i]
-
-        if (s == ''):
-            continue
-
-        s = s.upper()
-
-        a = s.split('=')
-        if (len(a) == 2):
-            k, v = a
-            config[k] = v
-
-    return config
-
+######################################################################
 ######################################################################
 
-# Determine the precision setting (SINGLE or DOUBLE?)
-#try:
-#    precisionfile = "_precision.pyx"
-#    precision = determinePrecision()
-#    print "Precision:",precision
-#    print 'Creating file "%s"...'%precisionfile
-#    f = file(precisionfile, "wt")
-#    f.write("# This file was automatically generated by the setup script\n\n")
-#    f.write('cdef extern from "ode/ode.h":\n')
-#    f.write('    # Define the basic floating point type used in ODE\n')
-#    f.write('    ctypedef %s dReal\n'%{"SINGLE":"float", "DOUBLE":"double"}[precision])
-#    f.close()
-#except RuntimeError:
-#    print "Aborting!"
-#    sys.exit()
+def info(msg):
+   """Output an info message.
+   """
+   print "INFO:",msg
 
+def warning(msg):
+   """Output a warning message.
+   """
+   print "WARNING:",msg
 
-
+def error(msg, errorcode=1):
+   """Output an error message and abort.
+   """
+   print "ERROR:",msg
+   sys.exit(errorcode)
 
 # Generate the C source file (if necessary)
 def generate(name, trimesh_support):
-    # Generate the trimesh_switch file
+   """Run Pyrex to generate the extension module source code.
+   """
 
-    f = file("_trimesh_switch.pyx", "wt")
-    print >>f, '# This file was generated by the setup script and is included in ode.pyx.\n'
-    if (trimesh_support):
-        print >>f, 'include "trimeshdata.pyx"'
-        print >>f, 'include "trimesh.pyx"'
-    else:
-        print >>f, 'include "trimesh_dummy.pyx"'
-    f.close()
+   # Generate the trimesh_switch file
+   f = file("_trimesh_switch.pyx", "wt")
+   print >>f, '# This file was generated by the setup script and is included in ode.pyx.\n'
+   if (trimesh_support):
+       print >>f, 'include "trimeshdata.pyx"'
+       print >>f, 'include "trimesh.pyx"'
+   else:
+       print >>f, 'include "trimesh_dummy.pyx"'
+   f.close()
 
-    cmd = "pyrexc -o %s -I. -Isrc src/ode.pyx" % name
-    pyrex_out = name
+   cmd = "pyrexc -o %s -I. -Isrc src/ode.pyx" % name
+   pyrex_out = name
 
-    # Check if the pyrex output is still up to date or if it has to be generated
-    # (ode.c will be updated if any of the *.pyx files in the directory "src"
-    # is newer than ode.c)
-    if os.access(pyrex_out, os.F_OK):
-        ctime = os.stat(pyrex_out)[ST_MTIME]
-        for pyx in glob.glob("src/*.pyx"):
-            pytime = os.stat(pyx)[ST_MTIME]
-            if pytime>ctime:
-                print "Updating",pyrex_out
-                print cmd
-                err = os.system(cmd)
-                break
-        else:
-            print pyrex_out,"is up to date"
-            err = 0
-    else:
-        print "Creating",pyrex_out
-        print cmd
-        err = os.system(cmd)
+   # Check if the pyrex output is still up to date or if it has to be generated
+   # (ode.c will be updated if any of the *.pyx files in the directory "src"
+   # is newer than ode.c)
+   if os.access(pyrex_out, os.F_OK):
+       ctime = os.stat(pyrex_out)[ST_MTIME]
+       for pyx in glob.glob("src/*.pyx"):
+           pytime = os.stat(pyx)[ST_MTIME]
+           if pytime>ctime:
+               info("Updating %s"%pyrex_out)
+               print cmd
+               err = os.system(cmd)
+               break
+       else:
+           info("%s is up to date"%pyrex_out)
+           err = 0
+   else:
+       info("Creating %s"%pyrex_out)
+       print cmd
+       err = os.system(cmd)
 
-    # Check if calling pyrex produced an error
-    if err!=0:
-        print "An error occured while generating the C source file."
-        sys.exit(err)
+   # Check if calling pyrex produced an error
+   if err!=0:
+       error("An error occured while generating the C source file.", err)
 
+######################################################################
 
-config = readODEConfig()
+# Check if ode.h can be found
+# (if it is not found it might not be an error because it may be located
+# in any of the include paths that are built into the compiler)
+num = 0
+for path in INC_DIRS:
+   ode_h = os.path.join(path, "ode", "ode.h")
+   if os.path.exists(ode_h):
+       info("<ode/ode.h> found in %s"%path)
+       num += 1
 
+if num==0:
+   warning("<ode/ode.h> not found. You may have to adjust INC_DIRS.")
+elif num>1:
+   warning("ode.h was found more than once. Make sure the header and lib matches.")
+
+# Generate all possible source code versions so that they can be
+# packaged with the source archive and a user doesn't require Pyrex
 generate('ode_trimesh.c', True)
 generate('ode_notrimesh.c', False)
 
-try:
-    wrap_trimesh = TRIMESH_SUPPORT_OVERRIDE
-except NameError, e:
-    wrap_trimesh = config.get('OPCODE_DIRECTORY', '')
-
-if (wrap_trimesh):
-    print "Installing with trimesh support."
-    install = 'ode_trimesh.c'
+if (TRIMESH_ENABLE):
+   info("Installing with trimesh support.")
+   install = 'ode_trimesh.c'
 else:
-    print "Installing without trimesh support."
-    install = 'ode_notrimesh.c'
+   info("INFO: Installing without trimesh support.")
+   install = 'ode_notrimesh.c'
 
 # Compile the module
 setup(name = "PyODE",
-      version = "1.1.0",
-      description = "Python wrapper for the Open Dynamics Engine",
-      author = "see file AUTHORS",
-      author_email = "timothy@stranex.com",
-      license = "BSD or LGPL",
-      url = "http://pyode.sourceforge.net/",
-      packages = ["xode"],
-      ext_modules = [Extension("ode", [install]
-                     ,libraries=LIBS
-                     ,include_dirs=INC_DIRS
-                     ,library_dirs=LIB_DIRS
-                     ,extra_compile_args=CC_ARGS)
-                    ])
+     version = "1.2.0",
+     description = "Python wrapper for the Open Dynamics Engine",
+     author = "see file AUTHORS",
+     author_email = "timothy@stranex.com",
+     license = "BSD or LGPL",
+     url = "http://pyode.sourceforge.net/",
+     packages = ["xode"],
+     ext_modules = [Extension("ode", [install]
+                    ,libraries=LIBS
+                    ,include_dirs=INC_DIRS
+                    ,library_dirs=LIB_DIRS
+                    ,extra_compile_args=CC_ARGS
+                    ,extra_link_args=LINK_ARGS)
+                   ])

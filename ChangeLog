@@ -1,3 +1,7 @@
+2006-11-28  Matthias Baas <baas@ira.uka.de>
+
+	* setup.py: Modified the setup script to upgrade to ODE 0.7.
+	
 2006-11-10  Matthias Baas <baas@ira.uka.de>
 
 	* joints.pyx, geoms.pyx: Applied some more patches by 
