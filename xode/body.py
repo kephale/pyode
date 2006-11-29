@@ -143,6 +143,7 @@ class Mass(node.TreeNode):
         node.TreeNode.__init__(self, name, parent)
 
         mass = ode.Mass()
+        mass.setSphere(1.0, 1.0)
         self.setODEObject(mass)
                 
         body = self.getFirstAncestor(ode.Body)
