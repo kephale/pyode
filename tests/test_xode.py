@@ -38,6 +38,11 @@ test_doc = '''<?xml version="1.0" encoding="iso-8859-1"?>
     </transform>
   
     <space name="space1">
+
+      <body name="body0">
+         <mass name="mass0" />
+      </body>
+
       <body name="body1" enabled="false" gravitymode="0">
         
         <transform scale="2.0">
@@ -449,8 +454,12 @@ class TestBodyParser(TestParser):
 class TestMassParser(TestParser):
     def setUp(self):
         TestParser.setUp(self)
+        self.mass0 = self.root.namedChild('mass0').getODEObject()
         self.mass1 = self.root.namedChild('mass1').getODEObject()
         self.mass2 = self.root.namedChild('mass2').getODEObject()
+
+        self.ref1 = ode.Mass()
+        self.ref1.setSphere(1.0, 1.0)
 
         self.ref2 = ode.Mass()
         self.ref2.setSphere(2.0, 10.0)
@@ -458,6 +467,11 @@ class TestMassParser(TestParser):
 
     def testInstance(self):
         self.assert_(isinstance(self.mass1, ode.Mass))
+
+    def testDefault(self):
+        self.assertEqual(self.mass0.c, self.ref1.c)
+        self.assertEqual(self.mass0.I, self.ref1.I)
+        self.assertEqual(self.mass0.mass, self.ref1.mass)
 
     def testTotal(self):
         self.assertEqual(self.mass2.mass, 4.0)
