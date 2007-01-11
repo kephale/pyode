@@ -40,7 +40,7 @@ if sys.platform=="win32":
 ######################################################################
 else:
 
-   for base in ["/usr", "/usr/local"]:
+   for base in ["/usr", "/usr/local", "/opt/local"]:
       INC_DIRS += [os.path.join(base, "include")]
       LIB_DIRS += [os.path.join(base, "lib")]
 
