@@ -362,15 +362,40 @@ cdef class GeomRay(GeomObject):
         return id
 
     def setLength(self, rlen):
+        '''setLength(rlen)
+
+        Set length of the ray.
+
+        @param rlen: length of the ray
+        @type rlen: float'''
         dGeomRaySetLength(self.gid, rlen)
 
     def getLength(self):
+        '''getLength() -> length
+
+        Get the length of the ray.
+
+        @returns: length of the ray (float)'''
         return dGeomRayGetLength(self.gid)
 
     def set(self, p, u):
+        '''set(p, u)
+
+        Set the position and rotation of a ray.
+        
+        @param p: position
+        @type p: 3-sequence of floats
+        @param u: rotation
+        @type u: 3-sequence of floats'''
         dGeomRaySet(self.gid, p[0],p[1],p[2], u[0],u[1],u[2])
 
     def get(self):
+        '''get() -> ((p[0], p[1], p[2]), (u[0], u[1], u[2]))
+
+        Return the position and rotation as a pair of
+        tuples.
+
+        @returns: position and rotation'''
         cdef dVector3 start
         cdef dVector3 dir
         dGeomRayGet(self.gid, start, dir)

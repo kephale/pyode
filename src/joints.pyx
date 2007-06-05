@@ -684,13 +684,25 @@ cdef class UniversalJoint(Joint):
         """
         dJointAddUniversalTorques(self.jid, torque1, torque2)
 
+    def getAngle1(self):
+        return dJointGetUniversalAngle1(self.jid)
+
+    def getAngle2(self):
+        return dJointGetUniversalAngle2(self.jid)
+    
+    def getAngle1Rate(self):
+        return dJointGetUniversalAngle1Rate(self.jid)
+
+    def getAngle2Rate(self):
+        return dJointGetUniversalAngle2Rate(self.jid)
+
     # setParam
     def setParam(self, param, value):
         dJointSetUniversalParam(self.jid, param, value)
 
     # getParam
     def getParam(self, param):
-       return dJointGetUniversalParam(self.jid, param)
+        return dJointGetUniversalParam(self.jid, param)
 
     
 # Hinge2Joint

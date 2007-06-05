@@ -52,6 +52,8 @@ cdef class GeomObject:
     # A dictionary with user defined attributes
     cdef object attribs
 
+    cdef object __weakref__
+
     def __new__(self, *a, **kw):
         self.gid = NULL
         self.space = None
@@ -74,6 +76,12 @@ cdef class GeomObject:
 
     def __setattr__(self, name, val):
         self.attribs[name]=val
+
+    def __delattr__(self, name):
+        if name in self.attribs:
+            del self.attribs[name]
+        else:
+            raise AttributeError, "geom has no attribute '%s'."%name
 
     def _id(self):
         """_id() -> int

@@ -151,7 +151,8 @@ Infinity = dInfinity
 ######################################################################
 
 # Lookup table for geom objects: C ptr -> Python object
-_geom_c2py_lut = {}
+import weakref
+_geom_c2py_lut = weakref.WeakValueDictionary()
 
 # Mass 
 include "mass.pyx"

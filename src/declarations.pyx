@@ -281,6 +281,10 @@ cdef extern from "ode/ode.h":
     void dJointGetUniversalAxis1 (dJointID, dVector3 result)
     void dJointGetUniversalAxis2 (dJointID, dVector3 result)
     dReal dJointGetUniversalParam (dJointID, int parameter)
+    dReal dJointGetUniversalAngle1 (dJointID)
+    dReal dJointGetUniversalAngle2 (dJointID)
+    dReal dJointGetUniversalAngle1Rate (dJointID)
+    dReal dJointGetUniversalAngle2Rate (dJointID)
     int dJointGetAMotorNumAxes (dJointID)
     void dJointGetAMotorAxis (dJointID, int anum, dVector3 result)
     int dJointGetAMotorAxisRel (dJointID, int anum)
@@ -445,6 +449,8 @@ cdef extern from "ode/ode.h":
 
     void dGeomTriMeshGetTriangle (dGeomID g, int Index, dVector3 *v0,
                                   dVector3 *v1, dVector3 *v2)
+
+    int dGeomTriMeshGetTriangleCount (dGeomID g)
 
     void dGeomTriMeshGetPoint (dGeomID g, int Index, dReal u, dReal v,
                                dVector3 Out)
