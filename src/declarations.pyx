@@ -49,6 +49,8 @@ cdef extern from "ode/ode.h":
         int _dummy
     cdef struct dxTriMeshData:
         int _dummy
+    cdef struct dxHeightfieldData:
+        int _dummy
 
     # Types
     ctypedef dxWorld* dWorldID
@@ -58,6 +60,7 @@ cdef extern from "ode/ode.h":
     ctypedef dxJoint* dJointID
     ctypedef dxJointGroup* dJointGroupID
     ctypedef dxTriMeshData* dTriMeshDataID
+    ctypedef dxHeightfieldData* dHeightfieldDataID
     ctypedef dReal dVector3[4]
     ctypedef dReal dVector4[4]
     ctypedef dReal dMatrix3[4*3]
@@ -81,6 +84,7 @@ cdef extern from "ode/ode.h":
         dVector3 t2
 
     ctypedef void dNearCallback(void* data, dGeomID o1, dGeomID o2)
+    ctypedef dReal dHeightfieldGetHeight( void* p_user_data, int x, int z )
 
     ctypedef struct dSurfaceParameters:
         int mode
@@ -457,3 +461,17 @@ cdef extern from "ode/ode.h":
 
     void dGeomTriMeshEnableTC(dGeomID g, int geomClass, int enable)
     int dGeomTriMeshIsTCEnabled(dGeomID g, int geomClass)
+
+    # Heightfield
+    dHeightfieldDataID dGeomHeightfieldDataCreate()
+    void dGeomHeightfieldDataDestroy(dHeightfieldDataID g)
+    void dGeomHeightfieldDataBuildCallback(dHeightfieldDataID d,
+                                           void* pUserData,
+                                           dHeightfieldGetHeight* pCallback,
+                                           dReal width, dReal depth,
+                                           int widthSamples, int depthSamples,
+                                           dReal scale, dReal offset,
+                                           dReal thickness, int bWrap)
+    dGeomID dCreateHeightfield (dSpaceID space, dHeightfieldDataID data,
+                                 int bPlaceable)
+

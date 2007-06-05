@@ -4,6 +4,7 @@
 	  mailing list (doc strings for GeomRay, __delattr__ on
 	  GeomObject, UniversalJoint angle updates, storing
 	  Geoms with weak references, triangle count)
+	* Added the heightfield patch as well
 
 2006-11-28  Matthias Baas <mbaas@users.sourceforge.net>
 

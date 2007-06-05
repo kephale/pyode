@@ -183,6 +183,8 @@ include "geoms.pyx"
 # (trimesh_dummy.pyx) if trimesh support is not available/desired.
 include "_trimesh_switch.pyx"
 
+include "heightfielddata.pyx"
+include "heightfield.pyx"
     
 def collide(geom1, geom2):
     """collide(geom1, geom2) -> contacts
