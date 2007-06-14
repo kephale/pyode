@@ -23,6 +23,10 @@ cdef class HeightfieldData:
     """This class is used to store heightfield data.
     """
     cdef dHeightfieldDataID hfdid
+    # This attribute stores the tuple which gets passed to the height
+    # callback. If we don't keep a reference, the tuple gets garbage
+    # collected.
+    cdef object calltup
 
     def __new__(self):
         self.hfdid = dGeomHeightfieldDataCreate()
@@ -36,6 +40,7 @@ cdef class HeightfieldData:
         cdef object tup
         cdef void* data
         tup = (callback, userdata)
+        self.calltup = tup
         data = <void*>tup
         dGeomHeightfieldDataBuildCallback(self.hfdid,
                                           data, get_height, width, depth,

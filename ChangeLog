@@ -3,7 +3,10 @@
 	* heightfielddata.pyx: bug fix from Dan Miller
 	* Reverted weakref patch -- it causes some kind of strange
 	  bug. I'll look into it later.
-
+	* heightfielddata.pyx: Save a reference to the data tuple, because
+	  otherwise it gets garbage collected and causes problems. Thanks
+	  to Dan Miller for finding the bug and figuring it out.
+	
 2007-06-05  Matthias Baas <mbaas@users.sourceforge.net>
 
 	* Applied a couple of patches posted by Ethan Glasser-Camp to the 
