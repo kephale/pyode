@@ -1,3 +1,7 @@
+2007-06-14  Ethan Glasser-Camp  <ethan.glasser.camp@gmail.com>
+
+	* heightfielddata.pyx: bug fix from Dan Miller
+
 2007-06-05  Matthias Baas <mbaas@users.sourceforge.net>
 
 	* Applied a couple of patches posted by Ethan Glasser-Camp to the 

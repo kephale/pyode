@@ -35,7 +35,7 @@ cdef class HeightfieldData:
                        scale, offset, thickness, bwrap):
         cdef object tup
         cdef void* data
-        tup = (callback, arg)
+        tup = (callback, userdata)
         data = <void*>tup
         dGeomHeightfieldDataBuildCallback(self.hfdid,
                                           data, get_height, width, depth,
