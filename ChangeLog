@@ -1,6 +1,8 @@
 2007-06-14  Ethan Glasser-Camp  <ethan.glasser.camp@gmail.com>
 
 	* heightfielddata.pyx: bug fix from Dan Miller
+	* Reverted weakref patch -- it causes some kind of strange
+	  bug. I'll look into it later.
 
 2007-06-05  Matthias Baas <mbaas@users.sourceforge.net>
 
