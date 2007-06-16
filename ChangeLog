@@ -1,3 +1,9 @@
+2007-06-16  Ethan Glasser-Camp  <ethan.glasser.camp@gmail.com>
+
+	* ode.pyx: reapplied weakref patch after finding the bug
+	* tutorial3.py: fix bug where geoms were not stored, causing them
+	  to be deleted as per the weakref patch :)
+
 2007-06-14  Ethan Glasser-Camp  <ethan.glasser.camp@gmail.com>
 
 	* heightfielddata.pyx: bug fix from Dan Miller

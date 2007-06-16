@@ -93,21 +93,22 @@ def create_box(world, space, density, lx, ly, lz):
     geom = ode.GeomBox(space, lengths=body.boxsize)
     geom.setBody(body)
 
-    return body
+    return body, geom
 
 # drop_object
 def drop_object():
     """Drop an object into the scene."""
 
-    global bodies, counter, objcount
+    global bodies, geom, counter, objcount
 
-    body = create_box(world, space, 1000, 1.0,0.2,0.2)
+    body, geom = create_box(world, space, 1000, 1.0,0.2,0.2)
     body.setPosition( (random.gauss(0,0.1),3.0,random.gauss(0,0.1)) )
     theta = random.uniform(0,2*pi)
     ct = cos (theta)
     st = sin (theta)
     body.setRotation([ct, 0., -st, 0., 1., 0., st, 0., ct])
     bodies.append(body)
+    geoms.append(geom)
     counter=0
     objcount+=1
 
@@ -196,6 +197,9 @@ floor = ode.GeomPlane(space, (0,1,0), 0)
 
 # A list with ODE bodies
 bodies = []
+
+# The geoms for each of the bodies
+geoms = []
 
 # A joint group for the contact joints that are generated whenever
 # two bodies collide
