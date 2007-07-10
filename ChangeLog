@@ -1,3 +1,9 @@
+2007-07-09  Ethan Glasser-Camp  <ethan.glasser.camp@gmail.com>
+
+	* tutorial3.py: change glScale to glScalef to be compatible with
+	  python-opengl version 3.0 and up. Thanks to Nathanial Troutman for
+	  finding the bug and suggesting a fix.
+
 2007-06-16  Ethan Glasser-Camp  <ethan.glasser.camp@gmail.com>
 
 	* ode.pyx: reapplied weakref patch after finding the bug
