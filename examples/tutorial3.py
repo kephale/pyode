@@ -70,7 +70,7 @@ def draw_body(body):
     glMultMatrixd(rot)
     if body.shape=="box":
         sx,sy,sz = body.boxsize
-        glScale(sx, sy, sz)
+        glScalef(sx, sy, sz)
         glutSolidCube(1)
     glPopMatrix()
 
