@@ -351,22 +351,22 @@ cdef class QuadTreeSpace(SpaceBase):
         pass
 
 
-def Space(type=0):
+def Space(space_type=0):
     """Space factory function.
 
     Depending on the type argument this function either returns a
-    SimpleSpace (type=0) or a HashSpace (type=1).
+    SimpleSpace (space_type=0) or a HashSpace (space_type=1).
 
     This function is provided to remain compatible with previous
     versions of PyODE where there was only one Space class.
     
-     >>> space = Space(type=0)   # Create a SimpleSpace
-     >>> space = Space(type=1)   # Create a HashSpace
+     >>> space = Space(space_type=0)   # Create a SimpleSpace
+     >>> space = Space(space_type=1)   # Create a HashSpace
     """
-    if type==0:
+    if space_type==0:
         return SimpleSpace()
-    elif type==1:
+    elif space_type==1:
         return HashSpace()
     else:
-        raise ValueError, "Unknown space type (%d)"%type
-    
+        raise ValueError, "Unknown space type (%d)"%space_type
+

@@ -1,3 +1,8 @@
+2008-12-21  Ethan Glasser-Camp  <ethan.glasser.camp@gmail.com>
+
+	* space.pyx: Rebuilding with new Pyrex gives an error with parameter
+	  "type". Renamed to "space_type" in Space factory method.
+
 2007-07-09  Ethan Glasser-Camp  <ethan.glasser.camp@gmail.com>
 
 	* tutorial3.py: change glScale to glScalef to be compatible with
