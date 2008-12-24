@@ -1,3 +1,9 @@
+2008-12-23  Ethan Glasser-Camp  <ethan.glasser.camp@gmail.com>
+
+	* setup.py: Compiling against new ODE. Needs to use ode-config to
+	get CFLAGS and LIBS (for example, to tell if we're compiling with
+	-DdDOUBLE).
+
 2008-12-21  Ethan Glasser-Camp  <ethan.glasser.camp@gmail.com>
 
 	* space.pyx: Rebuilding with new Pyrex gives an error with parameter
