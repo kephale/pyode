@@ -7,6 +7,10 @@ import distutils.sysconfig
 import shutil, os, os.path, sys, glob
 from stat import *
 
+def system(cmd):
+   f = os.popen(cmd)
+   return f.read()
+
 # Include directories
 INC_DIRS = []
 # Library directories
@@ -15,8 +19,10 @@ LIB_DIRS = []
 LIBS = []
 # Additional compiler arguments
 CC_ARGS = []
+CC_ARGS.extend(system("ode-config --cflags").split())
 # Additional linker arguments
 LINK_ARGS = []
+LINK_ARGS.extend(system("ode-config --libs").split())
 
 # If your version of ODE was compiled with OPCODE (trimesh support) enabled,
 # this should be set to True.
@@ -45,7 +51,6 @@ else:
       LIB_DIRS += [os.path.join(base, "lib")]
 
    LIBS += ["ode", "stdc++"]
-
 
 ######################################################################
 ######################################################################
