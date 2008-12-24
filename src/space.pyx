@@ -66,7 +66,7 @@ cdef class SpaceBase(GeomObject):
     # is the geom object (Python wrapper). This is used in collide_callback()
 #    cdef object geom_dict
 
-    def __new__(self, *a, **kw):
+    def __cinit__(self, *a, **kw):
         pass
 
     def __init__(self, *a, **kw):
@@ -230,7 +230,7 @@ cdef class SimpleSpace(SpaceBase):
     problems with the collision system.
     """
 
-    def __new__(self, space=None):
+    def __cinit__(self, space=None):
         cdef SpaceBase sp
         cdef dSpaceID parentid
 
@@ -263,7 +263,7 @@ cdef class HashSpace(SpaceBase):
     can be quickly paired with the objects around it.
     """
 
-    def __new__(self, space=None):
+    def __cinit__(self, space=None):
         cdef SpaceBase sp
         cdef dSpaceID parentid
 
@@ -322,7 +322,7 @@ cdef class QuadTreeSpace(SpaceBase):
     Currently getGeom() is not implemented for the quadtree space.
     """
 
-    def __new__(self, center, extents, depth, space=None):
+    def __cinit__(self, center, extents, depth, space=None):
         cdef SpaceBase sp
         cdef dSpaceID parentid
         cdef dVector3 c

@@ -31,7 +31,7 @@ cdef class GeomHeightfield(GeomObject):
     """
     cdef HeightfieldData data
 
-    def __new__(self, HeightfieldData data not None,
+    def __cinit__(self, HeightfieldData data not None,
                 placeable=True, space=None):
         cdef SpaceBase sp
         cdef dSpaceID sid

@@ -30,7 +30,7 @@ cdef class GeomSphere(GeomObject):
       GeomSphere(space=None, radius=1.0)
     """
 
-    def __new__(self, space=None, radius=1.0):
+    def __cinit__(self, space=None, radius=1.0):
         cdef SpaceBase sp
         cdef dSpaceID sid
 
@@ -99,7 +99,7 @@ cdef class GeomBox(GeomObject):
       GeomBox(space=None, lengths=(1.0, 1.0, 1.0))
     """
 
-    def __new__(self, space=None, lengths=(1.0, 1.0, 1.0)):
+    def __cinit__(self, space=None, lengths=(1.0, 1.0, 1.0)):
         cdef SpaceBase sp
         cdef dSpaceID sid
         
@@ -163,7 +163,7 @@ cdef class GeomPlane(GeomObject):
 
     """
 
-    def __new__(self, space=None, normal=(0,0,1), dist=0):
+    def __cinit__(self, space=None, normal=(0,0,1), dist=0):
         cdef SpaceBase sp
         cdef dSpaceID sid
         
@@ -223,7 +223,7 @@ cdef class GeomCapsule(GeomObject):
     The length parameter does not include the caps.
     """
 
-    def __new__(self, space=None, radius=0.5, length=1.0):
+    def __cinit__(self, space=None, radius=0.5, length=1.0):
         cdef SpaceBase sp
         cdef dSpaceID sid
         
@@ -285,7 +285,7 @@ cdef class GeomCylinder(GeomObject):
       GeomCylinder(space=None, radius=0.5, length=1.0)
     """
 
-    def __new__(self, space=None, radius=0.5, length=1.0):
+    def __cinit__(self, space=None, radius=0.5, length=1.0):
         cdef SpaceBase sp
         cdef dSpaceID sid
         
@@ -337,7 +337,7 @@ cdef class GeomRay(GeomObject):
     
     """
 
-    def __new__(self, space=None, rlen=1.0):
+    def __cinit__(self, space=None, rlen=1.0):
         cdef SpaceBase sp
         cdef dSpaceID sid
         
@@ -417,7 +417,7 @@ cdef class GeomTransform(GeomObject):
 
     cdef object geom
 
-    def __new__(self, space=None):
+    def __cinit__(self, space=None):
         cdef SpaceBase sp
         cdef dSpaceID sid
         

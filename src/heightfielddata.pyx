@@ -28,7 +28,7 @@ cdef class HeightfieldData:
     # collected.
     cdef object calltup
 
-    def __new__(self):
+    def __cinit__(self):
         self.hfdid = dGeomHeightfieldDataCreate()
 
     def __dealloc__(self):

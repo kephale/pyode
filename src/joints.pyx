@@ -47,7 +47,7 @@ cdef class JointGroup:
     # A list of Python joints that were added to the group
     cdef object jointlist
 
-    def __new__(self):
+    def __cinit__(self):
         self.gid = dJointGroupCreate(0)
 
     def __init__(self):
@@ -108,7 +108,7 @@ cdef class Joint:
     # (set via __getattr__ and __setattr__)
     cdef object userattribs
 
-    def __new__(self, *a, **kw):
+    def __cinit__(self, *a, **kw):
         self.jid = NULL
         self.world = None
         self.feedback = NULL
@@ -263,7 +263,7 @@ cdef class BallJoint(Joint):
       BallJoint(world, jointgroup=None)    
     """
 
-    def __new__(self, World world not None, jointgroup=None):
+    def __cinit__(self, World world not None, jointgroup=None):
         cdef JointGroup jg
         cdef dJointGroupID jgid
 
@@ -335,7 +335,7 @@ cdef class HingeJoint(Joint):
       HingeJoint(world, jointgroup=None)
     """
 
-    def __new__(self, World world not None, jointgroup=None):
+    def __cinit__(self, World world not None, jointgroup=None):
         cdef JointGroup jg
         cdef dJointGroupID jgid
         
@@ -489,7 +489,7 @@ cdef class SliderJoint(Joint):
       SlideJoint(world, jointgroup=None)
     """
 
-    def __new__(self, World world not None, jointgroup=None):
+    def __cinit__(self, World world not None, jointgroup=None):
         cdef JointGroup jg
         cdef dJointGroupID jgid
 
@@ -575,7 +575,7 @@ cdef class UniversalJoint(Joint):
       UniversalJoint(world, jointgroup=None)    
     """
 
-    def __new__(self, World world not None, jointgroup=None):
+    def __cinit__(self, World world not None, jointgroup=None):
         cdef JointGroup jg
         cdef dJointGroupID jgid
 
@@ -714,7 +714,7 @@ cdef class Hinge2Joint(Joint):
       Hinge2Joint(world, jointgroup=None)
     """
 
-    def __new__(self, World world not None, jointgroup=None):
+    def __cinit__(self, World world not None, jointgroup=None):
         cdef JointGroup jg
         cdef dJointGroupID jgid
 
@@ -870,7 +870,7 @@ cdef class FixedJoint(Joint):
       FixedJoint(world, jointgroup=None)    
     """
 
-    def __new__(self, World world not None, jointgroup=None):
+    def __cinit__(self, World world not None, jointgroup=None):
         cdef JointGroup jg
         cdef dJointGroupID jgid
 
@@ -905,7 +905,7 @@ cdef class ContactJoint(Joint):
       ContactJoint(world, jointgroup, contact)
     """
 
-    def __new__(self, World world not None, jointgroup, Contact contact):
+    def __cinit__(self, World world not None, jointgroup, Contact contact):
         cdef JointGroup jg
         cdef dJointGroupID jgid
         jgid=NULL
@@ -928,7 +928,7 @@ cdef class AMotor(Joint):
       AMotor(world, jointgroup=None)
     """
 
-    def __new__(self, World world not None, jointgroup=None):
+    def __cinit__(self, World world not None, jointgroup=None):
         cdef JointGroup jg
         cdef dJointGroupID jgid
 
@@ -1101,7 +1101,7 @@ cdef class LMotor(Joint):
       LMotor(world, jointgroup=None)
     """
 
-    def __new__(self, World world not None, jointgroup=None):
+    def __cinit__(self, World world not None, jointgroup=None):
         cdef JointGroup jg
         cdef dJointGroupID jgid
 
@@ -1190,7 +1190,7 @@ cdef class Plane2DJoint(Joint):
       Plane2DJoint(world, jointgroup=None)    
     """
 
-    def __new__(self, World world not None, jointgroup=None):
+    def __cinit__(self, World world not None, jointgroup=None):
         cdef JointGroup jg
         cdef dJointGroupID jgid
 

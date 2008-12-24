@@ -38,7 +38,7 @@ cdef class Contact:
     
     cdef dContact _contact
 
-    def __new__(self):
+    def __cinit__(self):
         self._contact.surface.mode = ContactBounce
         self._contact.surface.mu   = dInfinity
 

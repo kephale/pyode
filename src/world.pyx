@@ -33,7 +33,7 @@ cdef class World:
 
     cdef dWorldID wid
 
-    def __new__(self):
+    def __cinit__(self):
         self.wid = dWorldCreate()
 
     def __dealloc__(self):

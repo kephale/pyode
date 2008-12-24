@@ -43,7 +43,7 @@ cdef class Body:
     # (set via __getattr__ and __setattr__)
     cdef object userattribs
 
-    def __new__(self, World world not None):
+    def __cinit__(self, World world not None):
         self.bid = dBodyCreate(world.wid)
 
     def __init__(self, World world not None):

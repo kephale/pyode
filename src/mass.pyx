@@ -40,7 +40,7 @@ cdef class Mass:
     """
     cdef dMass _mass
 
-    def __new__(self):
+    def __cinit__(self):
         dMassSetZero(&self._mass)
 
     def setZero(self):

@@ -54,7 +54,7 @@ cdef class GeomObject:
 
     cdef object __weakref__
 
-    def __new__(self, *a, **kw):
+    def __cinit__(self, *a, **kw):
         self.gid = NULL
         self.space = None
         self.body = None

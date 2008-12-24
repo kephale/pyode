@@ -38,7 +38,7 @@ cdef class GeomTriMesh(GeomObject):
     # Keep a reference to the data
     cdef TriMeshData data
 
-    def __new__(self, TriMeshData data not None, space=None):
+    def __cinit__(self, TriMeshData data not None, space=None):
         cdef SpaceBase sp
         cdef dSpaceID sid
 

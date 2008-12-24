@@ -5,6 +5,7 @@
 	-DdDOUBLE).
 	* ode.pyx, declarations.pyx: Compiling against new ODE requires
 	dInitODE to initialize colliders.
+	* Renamed __new__ to __cinit__ for the new version of Pyrex.
 
 2008-12-21  Ethan Glasser-Camp  <ethan.glasser.camp@gmail.com>
 

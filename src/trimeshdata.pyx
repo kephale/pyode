@@ -27,7 +27,7 @@ cdef class TriMeshData:
     cdef dReal* vertex_buffer
     cdef int* face_buffer
 
-    def __new__(self):
+    def __cinit__(self):
         self.tmdid = dGeomTriMeshDataCreate()
         self.vertex_buffer = NULL
         self.face_buffer = NULL
