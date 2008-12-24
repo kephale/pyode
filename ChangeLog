@@ -3,6 +3,8 @@
 	* setup.py: Compiling against new ODE. Needs to use ode-config to
 	get CFLAGS and LIBS (for example, to tell if we're compiling with
 	-DdDOUBLE).
+	* ode.pyx, declarations.pyx: Compiling against new ODE requires
+	dInitODE to initialize colliders.
 
 2008-12-21  Ethan Glasser-Camp  <ethan.glasser.camp@gmail.com>
 

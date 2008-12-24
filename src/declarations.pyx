@@ -115,6 +115,7 @@ cdef extern from "ode/ode.h":
     void dWorldDestroy (dWorldID)
 
     void dCloseODE()
+    void dInitODE()
 
     void dWorldSetGravity (dWorldID, dReal x, dReal y, dReal z)
     void dWorldGetGravity (dWorldID, dVector3 gravity)

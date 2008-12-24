@@ -291,7 +291,15 @@ def CloseODE():
     """
     dCloseODE()
 
+def InitODE():
+    '''InitODE()
+
+    Initialize some ODE internals. This will be called for you when you 
+    "import ode", but you should call this again if you CloseODE().'''
+    dInitODE()
+
 ######################################################################
 
 #environment = Body(None)
 environment = None
+InitODE()
