@@ -1,3 +1,8 @@
+2009-02-19  Ethan Glasser-Camp  <ethan.glasser-camp@gmail.com>
+
+	* declarations.pyx, world.pyp: expose linear/angular damping
+	  controls. Patch by Tristam MacDonald.
+
 2008-12-23  Ethan Glasser-Camp  <ethan.glasser.camp@gmail.com>
 
 	* setup.py: Compiling against new ODE. Needs to use ode-config to

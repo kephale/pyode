@@ -141,6 +141,10 @@ cdef extern from "ode/ode.h":
     int dWorldGetAutoDisableSteps (dWorldID)
     void dWorldSetAutoDisableTime (dWorldID, dReal time)
     dReal dWorldGetAutoDisableTime (dWorldID)
+    dReal dWorldGetLinearDamping (dWorldID)
+    void dWorldSetLinearDamping (dWorldID, dReal scale)
+    dReal dWorldGetAngularDamping (dWorldID)
+    void dWorldSetAngularDamping (dWorldID, dReal scale)
     void dWorldImpulseToForce (dWorldID, dReal stepsize,
                                dReal ix, dReal iy, dReal iz, dVector3 force)
 

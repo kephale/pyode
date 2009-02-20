@@ -323,6 +323,44 @@ cdef class World:
         """
         return dWorldGetAutoDisableTime(self.wid)
 
+    # setLinearDamping
+    def setLinearDamping(self, scale):
+        """setLinearDamping(scale)
+
+        Set the world's linear damping scale.
+				@param scale The linear damping scale that is to be applied to bodies.
+				Default is 0 (no damping). Should be in the interval [0, 1].
+        @type scale: float
+        """
+        dWorldSetLinearDamping(self.wid, scale)
+
+    # getLinearDamping
+    def getLinearDamping(self):
+        """getLinearDamping() -> float
+
+        Get the world's linear damping scale.
+        """
+        return dWorldGetLinearDamping(self.wid)
+
+    # setAngularDamping
+    def setAngularDamping(self, scale):
+        """setAngularDamping(scale)
+
+        Set the world's angular damping scale.
+				@param scale The angular damping scale that is to be applied to bodies.
+				Default is 0 (no damping). Should be in the interval [0, 1].
+        @type scale: float
+        """
+        dWorldSetAngularDamping(self.wid, scale)
+
+    # getAngularDamping
+    def getAngularDamping(self):
+        """getAngularDamping() -> float
+
+        Get the world's angular damping scale.
+        """
+        return dWorldGetAngularDamping(self.wid)
+
     # impulseToForce
     def impulseToForce(self, stepsize, impulse):
         """impulseToForce(stepsize, impulse) -> 3-tuple
