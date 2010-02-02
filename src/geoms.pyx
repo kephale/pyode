@@ -19,6 +19,10 @@
 # LICENSE and LICENSE-BSD for more details. 
 ######################################################################
 
+# The list of geom classes supported in ODE, and whether or not they
+# are placeable, is at
+# http://opende.sourceforge.net/wiki/index.php/Manual_%28Collision_Detection%29
+
 # GeomSphere
 cdef class GeomSphere(GeomObject):
     """Sphere geometry.
@@ -360,6 +364,9 @@ cdef class GeomRay(GeomObject):
         cdef long id
         id = <long>self.gid
         return id
+
+    def placeable(self):
+        return True
 
     def setLength(self, rlen):
         '''setLength(rlen)
