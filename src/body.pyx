@@ -578,3 +578,34 @@ cdef class Body:
         Return True if the body is influenced by the world's gravity.
         """
         return dBodyGetGravityMode(self.bid)
+
+
+    def setDynamic(self):
+        """setDynamic()
+
+        Set a body to the (default) "dynamic" state, instead of "kinematic".
+        See setKinematic() for more information.
+        """
+        dBodySetDynamic(self.bid)
+
+    def setKinematic(self):
+        """setKinematic()
+
+        Set the kinematic state of the body (change it into a kinematic body)
+
+        Kinematic bodies behave as if they had infinite mass. This means they don't react
+        to any force (gravity, constraints or user-supplied); they simply follow 
+        velocity to reach the next position. [from ODE wiki]
+        """
+        dBodySetKinematic(self.bid)
+
+    def isKinematic(self):
+        """isKinematic() -> bool
+
+        Return True if the body is kinematic (not influenced by other forces).
+
+        Kinematic bodies behave as if they had infinite mass. This means they don't react
+        to any force (gravity, constraints or user-supplied); they simply follow
+        velocity to reach the next position. [from ODE wiki]
+        """
+        return dBodyIsKinematic(self.bid)

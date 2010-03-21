@@ -211,6 +211,10 @@ cdef extern from "ode/ode.h":
     void dBodySetGravityMode (dBodyID b, int mode)
     int dBodyGetGravityMode (dBodyID b)
 
+    void dBodySetDynamic (dBodyID)
+    void dBodySetKinematic (dBodyID)
+    int dBodyIsKinematic (dBodyID)
+
     # Joints
     dJointID dJointCreateBall (dWorldID, dJointGroupID)
     dJointID dJointCreateHinge (dWorldID, dJointGroupID)
