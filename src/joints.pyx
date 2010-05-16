@@ -89,6 +89,62 @@ cdef class JointGroup:
 
 ######################################################################
 
+
+class JointParam(object):
+    __slots__ = ('param_id')
+
+    def __init__(self, param_id):
+        self.param_id = param_id
+
+    def __get__(self, instance, owner):
+        try:
+            i = instance._index
+            if i < 1: i = 1
+            if i > 3: i = 3
+            #~ print "get", instance._index, self.param_id
+            val = instance._getParam(self.param_id + ParamGroup * (i-1))
+        finally:
+            instance._index = 1
+        return val
+
+    def __set__(self, instance, value):
+        try:
+            i = instance._index
+            if i < 1: i = 1
+            if i > 3: i = 3
+            #~ print "set", instance._index, self.param_id
+            instance._setParam(self.param_id + ParamGroup * (i-1), value)
+        finally:
+            instance._index = 1
+
+
+class JointParams(object):
+    # Do not let the user add custom fields to this class
+    # He may mispell a parameter name withoug getting any warning/error
+    __slots__ = ('_index', '_setParam', '_getParam', 'lo_stop', 'hi_stop', 'vel', 'fmax', 'fudge_factor', 'bounce', 'cfm', 'stop_erp', 'stop_cfm', 'suspension_erp', 'suspension_cfm')
+    lo_stop = JointParam(ParamLoStop )
+    hi_stop = JointParam(ParamHiStop)
+    vel = JointParam(ParamVel)
+    fmax = JointParam(ParamFMax)
+    fudge_factor = JointParam(ParamFudgeFactor)
+    bounce = JointParam(ParamBounce)
+    cfm = JointParam(ParamCFM)
+    stop_erp = JointParam(ParamStopERP)
+    stop_cfm = JointParam(ParamStopCFM)
+    suspension_erp = JointParam(ParamSuspensionERP)
+    suspension_cfm = JointParam(ParamSuspensionCFM)
+
+    _index = 1
+
+    def __init__(self, getParam, setParam):
+        self._setParam = setParam
+        self._getParam = getParam
+
+    def __getitem__(self, key):
+        self._index = int(key)
+        return self
+
+
 # Joint
 cdef class Joint:
     """Base class for all joint classes."""
@@ -104,6 +160,11 @@ cdef class Joint:
     cdef object body1
     cdef object body2
 
+    cdef readonly object param
+
+    cdef void (*setJointParam)(dJointID, int, dReal)
+    cdef dReal (*getJointParam)(dJointID, int)
+
     # A dictionary with user attributes
     # (set via __getattr__ and __setattr__)
     cdef object userattribs
@@ -115,6 +176,8 @@ cdef class Joint:
         self.body1 = None
         self.body2 = None
         self.userattribs = {}
+        self.setJointParam = NULL
+        self.getJointParam = NULL
 
     def __init__(self, *a, **kw):
         raise NotImplementedError, "The Joint base class can't be used directly."
@@ -198,6 +261,15 @@ cdef class Joint:
         else:
             raise IndexError()
 
+    def enable(self):
+        dJointEnable(self.jid)
+
+    def disable(self):
+        dJointDisable(self.jid)
+
+    def isEnabled(self):
+        return dJointIsEnabled(<dJointID>self.jid)
+
     # setFeedback
     def setFeedback(self, flag=1):
         """setFeedback(flag=True)
@@ -251,6 +323,47 @@ cdef class Joint:
         t2 = (fb.t2[0], fb.t2[1], fb.t2[2])
         return (f1,t1,f2,t2)
 
+
+    # setParam
+    def setParam(self, param, value):
+        """setParam(param, value)
+
+        Set limit/motor parameters for the joint.
+
+        param is one of ParamLoStop, ParamHiStop, ParamVel, ParamFMax,
+        ParamFudgeFactor, ParamBounce, ParamCFM, ParamStopERP, ParamStopCFM,
+        ParamSuspensionERP, ParamSuspensionCFM.
+
+        These parameter names can be optionally followed by a digit (2
+        or 3) to indicate the second or third set of parameters.
+
+        @param param: Selects the parameter to set
+        @param value: Parameter value
+        @type param: int
+        @type value: float
+        """
+
+        self.setJointParam(self.jid, param, value)
+
+    # getParam
+    def getParam(self, param):
+        """getParam(param) -> float
+
+        Get limit/motor parameters for the joint.
+
+        param is one of ParamLoStop, ParamHiStop, ParamVel, ParamFMax,
+        ParamFudgeFactor, ParamBounce, ParamCFM, ParamStopERP, ParamStopCFM,
+        ParamSuspensionERP, ParamSuspensionCFM.
+
+        These parameter names can be optionally followed by a digit (2
+        or 3) to indicate the second or third set of parameters.
+
+        @param param: Selects the parameter to read
+        @type param: int
+        """
+        return self.getJointParam(self.jid, param)
+
+
 ######################################################################
 
 
@@ -273,11 +386,16 @@ cdef class BallJoint(Joint):
             jgid=jg.gid
         self.jid = dJointCreateBall(world.wid, jgid)
 
+        self.setJointParam = dJointSetBallParam
+        self.getJointParam = dJointGetBallParam
+
+
     def __init__(self, World world not None, jointgroup=None):
         self.world = world
         if jointgroup!=None:
             jointgroup._addjoint(self)
-            
+        self.param = JointParams(self.getParam, self.setParam)
+
     # setAnchor
     def setAnchor(self, pos):
         """setAnchor(pos)
@@ -315,17 +433,9 @@ cdef class BallJoint(Joint):
         cdef dVector3 p
         dJointGetBallAnchor2(self.jid, p)
         return (p[0],p[1],p[2])
-                
 
-    # setParam
-    def setParam(self, param, value):
-        pass
 
-    # getParam
-    def getParam(self, param):
-        return 0.0
-        
-    
+
 # HingeJoint
 cdef class HingeJoint(Joint):
     """Hinge joint.
@@ -344,11 +454,17 @@ cdef class HingeJoint(Joint):
             jg=jointgroup
             jgid=jg.gid
         self.jid = dJointCreateHinge(world.wid, jgid)
-        
+
+        self.setJointParam = dJointSetHingeParam
+        self.getJointParam = dJointGetHingeParam
+
     def __init__(self, World world not None, jointgroup=None):
         self.world = world
         if jointgroup!=None:
             jointgroup._addjoint(self)
+        self.param = JointParams(self.getParam, self.setParam)
+
+
 
     # setAnchor
     def setAnchor(self, pos):
@@ -395,7 +511,27 @@ cdef class HingeJoint(Joint):
         @type axis: 3-sequence of floats
         """
         dJointSetHingeAxis(self.jid, axis[0], axis[1], axis[2])
-    
+
+    def setAxisAndAngleOffset(self, axis, angle_offset):
+        """setAxisAndAngleOffset(axis)
+
+        Set the hinge axis and angle offset.
+        Wraps dJointSetHingeAxisOffset.
+
+        @param axis: Hinge axis
+        @type axis: 3-sequence of floats
+        """
+        dJointSetHingeAxisOffset(self.jid, axis[0], axis[1], axis[2], angle_offset)
+
+    def setAngleOffset(self, angle_offset):
+        """setAngleOffset(axis)
+
+        Set the angle offset.
+        """
+        cdef dVector3 a
+        dJointGetHingeAxis(self.jid, a)
+        dJointSetHingeAxisOffset(self.jid, a[0], a[1], a[2], angle_offset)
+
     # getAxis
     def getAxis(self):
         """getAxis() -> 3-tuple of floats
@@ -440,46 +576,7 @@ cdef class HingeJoint(Joint):
         """
         dJointAddHingeTorque(self.jid, torque)
 
-    # setParam
-    def setParam(self, param, value):
-        """setParam(param, value)
 
-        Set limit/motor parameters for the joint.
-
-        param is one of ParamLoStop, ParamHiStop, ParamVel, ParamFMax,
-        ParamFudgeFactor, ParamBounce, ParamCFM, ParamStopERP, ParamStopCFM,
-        ParamSuspensionERP, ParamSuspensionCFM.
-
-        These parameter names can be optionally followed by a digit (2
-        or 3) to indicate the second or third set of parameters.
-
-        @param param: Selects the parameter to set
-        @param value: Parameter value 
-        @type param: int
-        @type value: float
-        """
-        
-        dJointSetHingeParam(self.jid, param, value)
-
-    # getParam
-    def getParam(self, param):
-        """getParam(param) -> float
-
-        Get limit/motor parameters for the joint.
-
-        param is one of ParamLoStop, ParamHiStop, ParamVel, ParamFMax,
-        ParamFudgeFactor, ParamBounce, ParamCFM, ParamStopERP, ParamStopCFM,
-        ParamSuspensionERP, ParamSuspensionCFM.
-
-        These parameter names can be optionally followed by a digit (2
-        or 3) to indicate the second or third set of parameters.
-
-        @param param: Selects the parameter to read
-        @type param: int        
-        """
-        return dJointGetHingeParam(self.jid, param)
-        
-        
 # SliderJoint
 cdef class SliderJoint(Joint):
     """Slider joint.
@@ -499,11 +596,15 @@ cdef class SliderJoint(Joint):
             jgid=jg.gid
         self.jid = dJointCreateSlider(world.wid, jgid)
 
+        self.setJointParam = dJointSetSliderParam
+        self.getJointParam = dJointGetSliderParam
+
     def __init__(self, World world not None, jointgroup=None):
         self.world = world
         if jointgroup!=None:
             jointgroup._addjoint(self)
-          
+        self.param = JointParams(self.getParam, self.setParam)
+
     # setAxis
     def setAxis(self, axis):
         """setAxis(axis)
@@ -557,15 +658,7 @@ cdef class SliderJoint(Joint):
         """
         dJointAddSliderForce(self.jid, force)
 
-    # setParam
-    def setParam(self, param, value):
-        dJointSetSliderParam(self.jid, param, value)
 
-    # getParam
-    def getParam(self, param):
-        return dJointGetSliderParam(self.jid, param)
-        
-    
 # UniversalJoint
 cdef class UniversalJoint(Joint):
     """Universal joint.
@@ -585,10 +678,14 @@ cdef class UniversalJoint(Joint):
             jgid=jg.gid
         self.jid = dJointCreateUniversal(world.wid, jgid)
 
+        self.setJointParam = dJointSetUniversalParam
+        self.getJointParam = dJointGetUniversalParam
+
     def __init__(self, World world not None, jointgroup=None):
         self.world = world
         if jointgroup!=None:
             jointgroup._addjoint(self)
+        self.param = JointParams(self.getParam, self.setParam)
 
     # setAnchor
     def setAnchor(self, pos):
@@ -696,15 +793,8 @@ cdef class UniversalJoint(Joint):
     def getAngle2Rate(self):
         return dJointGetUniversalAngle2Rate(self.jid)
 
-    # setParam
-    def setParam(self, param, value):
-        dJointSetUniversalParam(self.jid, param, value)
 
-    # getParam
-    def getParam(self, param):
-        return dJointGetUniversalParam(self.jid, param)
 
-    
 # Hinge2Joint
 cdef class Hinge2Joint(Joint):
     """Hinge2 joint.
@@ -724,10 +814,14 @@ cdef class Hinge2Joint(Joint):
             jgid=jg.gid
         self.jid = dJointCreateHinge2(world.wid, jgid)
 
-    def __init__(self, World world, jointgroup=None):
+        self.setJointParam = dJointSetHinge2Param
+        self.getJointParam = dJointGetHinge2Param
+
+    def __init__(self, World world not None, jointgroup=None):
         self.world = world
         if jointgroup!=None:
             jointgroup._addjoint(self)
+        self.param = JointParams(self.getParam, self.setParam)
 
     # setAnchor
     def setAnchor(self, pos):
@@ -852,15 +946,12 @@ cdef class Hinge2Joint(Joint):
         """
         dJointAddHinge2Torques(self.jid, torque1, torque2)
 
-    # setParam
-    def setParam(self, param, value):
-        dJointSetHinge2Param(self.jid, param, value)
+cdef void _dJointSetFixedParam(dJointID id, int param, dReal value):
+    raise Exception, "Fixed joint does not have any parameters"
 
-    # getParam
-    def getParam(self, param):
-        return dJointGetHinge2Param(self.jid, param)
+cdef dReal _dJointGetFixedParam(dJointID id, int param):
+    raise Exception, "Fixed joint does not have any parameters"
 
-    
 # FixedJoint
 cdef class FixedJoint(Joint):
     """Fixed joint.
@@ -880,10 +971,14 @@ cdef class FixedJoint(Joint):
             jgid=jg.gid
         self.jid = dJointCreateFixed(world.wid, jgid)
 
+        self.setJointParam = _dJointSetFixedParam
+        self.getJointParam = _dJointGetFixedParam
+
     def __init__(self, World world not None, jointgroup=None):
         self.world = world
         if jointgroup!=None:
             jointgroup._addjoint(self)
+        self.param = JointParams(self.getParam, self.setParam)
 
     # setFixed
     def setFixed(self):
@@ -895,7 +990,25 @@ cdef class FixedJoint(Joint):
         """
         dJointSetFixed(self.jid)
 
-        
+def CreateContactJointQ(world, jointgroup, c, contactprops, geom1, geom2):
+    cdef dBodyID b1id, b2id
+
+    c.setContactSurfaceParams(*contactprops)
+
+    # Create the contact joint
+    j = ContactJoint(world, jointgroup, c)
+    j.attach(geom1.getBody(), geom2.getBody())
+    #dJointAttach(self.jid, id1, id2)
+
+    #~ b1id = dGeomGetBody(<dGeomID>geom1.gid)
+    #~ b2id = dGeomGetBody(<dGeomID>geom2.gid)
+#            if b1==None:
+#                b1=ode.environment
+#            if b2==None:
+#                b2=ode.environment
+    #j.attach(b1, b2)
+
+
 # ContactJoint
 cdef class ContactJoint(Joint):
     """Contact joint.
@@ -938,11 +1051,15 @@ cdef class AMotor(Joint):
             jgid = jg.gid
         self.jid = dJointCreateAMotor(world.wid, jgid)
 
+        self.setJointParam = dJointSetAMotorParam
+        self.getJointParam = dJointGetAMotorParam
+
     def __init__(self, World world not None, jointgroup=None):
         self.world = world
         if jointgroup!=None:
             jointgroup._addjoint(self)
-            
+        self.param = JointParams(self.getParam, self.setParam)
+
     # setMode
     def setMode(self, mode):
         """setMode(mode)
@@ -1083,14 +1200,6 @@ cdef class AMotor(Joint):
         """
         dJointAddAMotorTorques(self.jid, torque0, torque1, torque2)
 
-    # setParam
-    def setParam(self, param, value):
-        dJointSetAMotorParam(self.jid, param, value)
-
-    # getParam
-    def getParam(self, param):
-        return dJointGetAMotorParam(self.jid, param)
-
 
 # LMotor
 cdef class LMotor(Joint):
@@ -1111,11 +1220,15 @@ cdef class LMotor(Joint):
             jgid = jg.gid
         self.jid = dJointCreateLMotor(world.wid, jgid)
 
+        self.setJointParam = dJointSetLMotorParam
+        self.getJointParam = dJointGetLMotorParam
+
     def __init__(self, World world not None, jointgroup=None):
         self.world = world
         if jointgroup!=None:
             jointgroup._addjoint(self)
-            
+        self.param = JointParams(self.getParam, self.setParam)
+
     # setNumAxes
     def setNumAxes(self, int num):
         """setNumAxes(num)
@@ -1172,13 +1285,6 @@ cdef class LMotor(Joint):
         dJointGetLMotorAxis(self.jid, anum, a)
         return (a[0],a[1],a[2])
 
-    # setParam
-    def setParam(self, param, value):
-        dJointSetLMotorParam(self.jid, param, value)
-
-    # getParam
-    def getParam(self, param):
-        return dJointGetLMotorParam(self.jid, param)
 
 
 # Plane2DJoint
@@ -1186,9 +1292,13 @@ cdef class Plane2DJoint(Joint):
     """Plane-2D Joint.
 
     Constructor::
-    
-      Plane2DJoint(world, jointgroup=None)    
+
+      Plane2DJoint(world, jointgroup=None)
     """
+
+    cdef readonly object paramX
+    cdef readonly object paramY
+    cdef readonly object paramAngle
 
     def __cinit__(self, World world not None, jointgroup=None):
         cdef JointGroup jg
@@ -1204,7 +1314,16 @@ cdef class Plane2DJoint(Joint):
         self.world = world
         if jointgroup!=None:
             jointgroup._addjoint(self)
-            
+
+        self.paramX = JointParams(self.dontGetParam, self.setXParam)
+        self.paramY = JointParams(self.dontGetParam, self.setYParam)
+        self.paramAngle = JointParams(self.dontGetParam, self.setAngleParam)
+        self.param = {'X': self.paramX, 'Y': self.paramY, 'Angle': self.paramAngle}
+
+    def dontGetParam(self, param):
+        print "You may only set Plane2D parameters."
+        print "ODE API does not expose methods for reading their values."
+
     def setXParam(self, param, value):
         dJointSetPlane2DXParam(self.jid, param, value)
         
@@ -1213,3 +1332,506 @@ cdef class Plane2DJoint(Joint):
         
     def setAngleParam(self, param, value):
         dJointSetPlane2DAngleParam(self.jid, param, value)
+
+cdef class PRJoint(Joint):
+    """PR (Prismatic and Rotoide) joint.
+
+    Constructor::
+
+      PRJoint(world, jointgroup=None)
+
+    http://opende.sourceforge.net/wiki/index.php/Manual_(Joint_Types_and_Functions)#Prismatic_and_Rotoide
+
+    """
+
+    def __cinit__(self, World world not None, jointgroup=None):
+        cdef JointGroup jg
+        cdef dJointGroupID jgid
+
+        jgid=NULL
+        if jointgroup!=None:
+            jg=jointgroup
+            jgid=jg.gid
+        self.jid = dJointCreatePR(world.wid, jgid)
+
+        self.setJointParam = dJointSetPRParam
+        self.getJointParam = dJointGetPRParam
+
+    def __init__(self, World world not None, jointgroup=None):
+        self.world = world
+        if jointgroup!=None:
+            jointgroup._addjoint(self)
+        self.param = JointParams(self.getParam, self.setParam)
+
+    def setAxis1(self, axis):
+        """setAxis1(axis)
+
+        Set the first PR axis (this is the prismatic axis).
+
+        @param axis: Prismatic axis
+        @type axis: 3-sequence of floats
+        """
+        dJointSetPRAxis1(self.jid, axis[0], axis[1], axis[2])
+
+    def getAxis1(self):
+        """getAxis1() -> 3-tuple of floats
+
+        Get the first PR axis (this is the prismatic axis).
+        """
+        cdef dVector3 a
+        dJointGetPRAxis1(self.jid, a)
+        return (a[0],a[1],a[2])
+
+    def setAxis2(self, axis):
+        """setAxis2(axis)
+
+        Set the second PR axis (this is the rotoide axis).
+
+        Important: The two axes must not be parallel.
+        Since this is a new joint only when the 2 joint are at 90deg
+        of each other was fully tested.
+
+        @param axis: Rotoide axis
+        @type axis: 3-sequence of floats
+        """
+        dJointSetPRAxis2(self.jid, axis[0], axis[1], axis[2])
+
+    def getAxis2(self):
+        """getAxis2() -> 3-tuple of floats
+
+        Get the second PR axis (this is the rotoide axis).
+        """
+        cdef dVector3 a
+        dJointGetPRAxis2(self.jid, a)
+        return (a[0],a[1],a[2])
+
+    # getPosition
+    def getPosition(self):
+        """getPosition() -> float
+
+        Get the PR linear position (i.e. the prismatic's extension).
+
+        When the axis is set, the current position of body1 and the anchor
+        is examined and that position will be the zero position.
+
+        The position is the "oriented" length between the body1 and and
+        the rotoide articulation.
+
+        position = (Prismatic axis) dot_product [(body1 + offset) - (body2 + anchor2)]
+        """
+
+        return dJointGetPRPosition(self.jid)
+
+
+cdef class PistonJoint(Joint):
+    """Piston joint.
+
+    Constructor::
+
+      PistonJoint(world, jointgroup=None)
+
+    A piston joint is similar to a Slider joint, except that
+    rotation around the translation axis is possible.
+
+    The default axis is: Axis: x=1, y=0, z=0
+
+    http://opende.sourceforge.net/wiki/index.php/Manual_(Joint_Types_and_Functions)#Piston
+
+    """
+
+    def __cinit__(self, World world not None, jointgroup=None):
+        cdef JointGroup jg
+        cdef dJointGroupID jgid
+
+        jgid=NULL
+        if jointgroup!=None:
+            jg=jointgroup
+            jgid=jg.gid
+        self.jid = dJointCreatePiston(world.wid, jgid)
+
+        self.setJointParam = dJointSetPistonParam
+        self.getJointParam = dJointGetPistonParam
+
+
+    def __init__(self, World world not None, jointgroup=None):
+        self.world = world
+        if jointgroup!=None:
+            jointgroup._addjoint(self)
+        self.param = JointParams(self.getParam, self.setParam)
+
+
+    # getAnchor
+    def getAnchor(self):
+        """getAnchor() -> 3-tuple of floats
+
+        """
+
+        cdef dVector3 p
+        dJointGetPistonAnchor(self.jid, p)
+        return (p[0],p[1],p[2])
+
+    # getAnchor2
+    def getAnchor2(self):
+        """getAnchor2() -> 3-tuple of floats
+
+        Get the joint anchor point, in world coordinates.
+
+        This returns the point on body 2. If the joint is perfectly satisfied,
+        this will return the same value as dJointGetPistonAnchor.
+        If not, this value will be slightly different.
+
+        This can be used, for example, to see how far the joint has come apart.
+        """
+
+        cdef dVector3 p
+        dJointGetPistonAnchor2(self.jid, p)
+        return (p[0],p[1],p[2])
+
+    # setAnchor
+    def setAnchor(self, pos):
+        """setAnchor(pos)
+
+        Set the Piston anchor.
+
+        @param pos: Anchor position
+        @type pos: 3-sequence of floats
+        """
+        dJointSetPistonAnchor(self.jid, pos[0], pos[1], pos[2])
+
+
+
+    def getAxis(self):
+        """getAxis() -> 3-tuple of floats
+
+        Get the piston axis.
+        """
+        cdef dVector3 a
+        dJointGetPistonAxis(self.jid, a)
+        return (a[0],a[1],a[2])
+
+    def setAxis(self, axis):
+        """setAxis(axis)
+
+        Set the piston axis.
+
+        When the piston axis is set, the current position of the attached
+        bodies is examined and that position will be the zero angle.
+
+        @param axis: Piston axis
+        @type axis: 3-sequence of floats
+        """
+        dJointSetPistonAxis(self.jid, axis[0], axis[1], axis[2])
+
+
+    def setAxisDelta(self, axis, delta):
+        """setAxisDelta(axis)
+
+        Does some black magic (not documented in the ODE wiki)
+
+        @param axis: Piston axis
+        @param delta: Piston delta
+        @type axis: 3-sequence of floats
+        """
+        dJointSetPistonAxisDelta(self.jid, axis[0], axis[1], axis[2], delta[0], delta[1], delta[2])
+
+    # getPosition
+    def getPosition(self):
+        """getPosition() -> float
+
+        Get the Piston linear position (i.e. the prismatic's extension)
+
+        [The explanation from ODE wiki is copied from PU joint,
+         and might not be 100% accurate]
+
+        When the anchor is set, the current position of body1 and the anchor
+        is examined and that position will be the zero position (initial_offset)
+        (i.e. dJointGetPUPosition with the body1 at that position with respect
+        to the anchor will return 0.0).
+
+        The position is the "oriented" length between the body1 and and the anchor.
+
+        position = { (Prismatic axis) dot_product [body1 - anchor] } - initial_offset
+        """
+        return dJointGetPistonPosition(self.jid)
+
+    # getPositionRate
+    def getPositionRate(self):
+        """getPositionRate() -> float
+
+        Get the time derivative of the position.
+        """
+        return dJointGetPistonPositionRate(self.jid)
+
+
+   # dReal dJointGetPistonAngle (dJointID);
+    def getAngle(self):
+        """
+        getAngle() -> float
+
+        This is a wrapper for the following ODE function:
+
+        dReal dJointGetPistonAngle (dJointID);
+
+        """
+        return dJointGetPistonAngle(self.jid)
+
+
+    # dReal dJointGetPistonAngleRate (dJointID);
+    def getAngleRate(self):
+        """
+        getPistonAngleRate() -> float
+
+        This is a wrapper for the following ODE function:
+
+        dReal dJointGetPistonAngleRate (dJointID);
+
+        """
+        return dJointGetPistonAngleRate(self.jid)
+
+    # addForce
+    def addForce(self, force):
+        """addForce(force)
+
+        Applies the given force in the piston's direction.
+
+        @param force: Force magnitude
+        @type force: float
+        """
+        dJointAddPistonForce(self.jid, force)
+
+
+
+cdef class PUJoint(Joint):
+    """PU (Prismatic - Universal) joint.
+
+    Constructor::
+
+      PUJoint(world, jointgroup=None)
+
+    http://opende.sourceforge.net/wiki/index.php/Manual_(Joint_Types_and_Functions)#Prismatic_-_Universal
+
+    """
+
+    def __cinit__(self, World world not None, jointgroup=None):
+        cdef JointGroup jg
+        cdef dJointGroupID jgid
+
+        jgid=NULL
+        if jointgroup!=None:
+            jg=jointgroup
+            jgid=jg.gid
+        self.jid = dJointCreatePU(world.wid, jgid)
+
+        self.setJointParam = dJointSetPUParam
+        self.getJointParam = dJointGetPUParam
+
+    def __init__(self, World world not None, jointgroup=None):
+        self.world = world
+        if jointgroup!=None:
+            jointgroup._addjoint(self)
+        self.param = JointParams(self.getParam, self.setParam)
+
+
+    # getAnchor
+    def getAnchor(self):
+        """getAnchor() -> 3-tuple of floats
+
+        """
+
+        cdef dVector3 p
+        dJointGetPUAnchor(self.jid, p)
+        return (p[0],p[1],p[2])
+
+    # setAnchor
+    def setAnchor(self, pos):
+        """setAnchor(pos)
+
+        Set the PU anchor.
+
+        @param pos: Anchor position
+        @type pos: 3-sequence of floats
+        """
+        dJointSetPUAnchor(self.jid, pos[0], pos[1], pos[2])
+
+    # setAnchor
+    def setAnchorDelta(self, pos, delta):
+        """setAnchorDelta(pos, delta)
+
+        Set the PU anchor and the relative position of each body,
+        as if body1 was at its current position + [dx,dy,dy]
+        (dx, dy, dx in world frame).
+
+        [DZ is missing?!]
+
+        This is like setting the joint with the prismatic part
+        already elongated or compressed.
+
+        After setting the anchor with a delta, if the function
+        dJointGetPUPosition is called, the answer will be:
+
+        sqrt(dx*dx + dy*dy + dz*dz) * Normalize[axis3 dot_product (dx,dy,dz)]
+
+
+        @param pos: Anchor position
+        @param delta: Anchor position
+        @type pos: 3-sequence of floats
+        """
+        dJointSetPUAnchorDelta(self.jid, pos[0], pos[1], pos[2], delta[0], delta[1], delta[2])
+
+    def setAxis1(self, axis):
+        """setAxis1(axis)
+
+        Set the first PU axis.
+
+        @param axis: Axis 1
+        @type axis: 3-sequence of floats
+        """
+        dJointSetPUAxis1(self.jid, axis[0], axis[1], axis[2])
+
+    def getAxis1(self):
+        """getAxis1() -> 3-tuple of floats
+
+        Get the first PU axis.
+        """
+        cdef dVector3 a
+        dJointGetPUAxis1(self.jid, a)
+        return (a[0],a[1],a[2])
+
+    def setAxis2(self, axis):
+        """setAxis2(axis)
+
+        Set the second PU axis.
+
+        Axis 1 and axis 2 should be perpendicular to each other.
+
+        @param axis: Axis 2
+        @type axis: 3-sequence of floats
+        """
+        dJointSetPUAxis2(self.jid, axis[0], axis[1], axis[2])
+
+    def getAxis2(self):
+        """getAxis2() -> 3-tuple of floats
+
+        Get the second PR axis (this is the rotoide axis).
+        """
+        cdef dVector3 a
+        dJointGetPUAxis2(self.jid, a)
+        return (a[0],a[1],a[2])
+
+    def setAxis3(self, axis):
+        """setAxis3(axis)
+
+        Set the axis for the prismatic articulation.
+
+        @param axis: Axis 3
+        @type axis: 3-sequence of floats
+        """
+        dJointSetPUAxis3(self.jid, axis[0], axis[1], axis[2])
+
+    def getAxis3(self):
+        """getAxis3() -> 3-tuple of floats
+
+        Get the axis for the prismatic articulation.
+        """
+        cdef dVector3 a
+        dJointGetPUAxis3(self.jid, a)
+        return (a[0],a[1],a[2])
+
+    def getAxisP(self):
+        return getAxis3(self)
+    def setAxisP(self, axis):
+        setAxis3(self, axis)
+
+
+    # void dJointGetPUAngles (dJointID, dReal *angle1, dReal *angle2);
+    def getAngles(self):
+        """
+        getAngles() -> void
+
+        This is a wrapper for the following ODE function:
+
+        void dJointGetPUAngles (dJointID, dReal *angle1, dReal *angle2);
+
+        """
+        cdef dReal angle1, angle2
+        dJointGetPUAngles(self.jid, &angle1, &angle2)
+        return (angle1, angle2)
+
+
+    # dReal dJointGetPUAngle1 (dJointID);
+    def getAngle1(self):
+        """
+        getAngle1() -> float
+
+        This is a wrapper for the following ODE function:
+
+        dReal dJointGetPUAngle1 (dJointID);
+
+        """
+        return dJointGetPUAngle1(self.jid)
+
+
+    # dReal dJointGetPUAngle2 (dJointID);
+    def getAngle2(self):
+        """
+        getAngle2() -> float
+
+        This is a wrapper for the following ODE function:
+
+        dReal dJointGetPUAngle2 (dJointID);
+
+        """
+        return dJointGetPUAngle2(self.jid)
+
+
+    # dReal dJointGetPUAngle1Rate (dJointID);
+    def getAngle1Rate(self):
+        """
+        getAngle1Rate() -> float
+
+        This is a wrapper for the following ODE function:
+
+        dReal dJointGetPUAngle1Rate (dJointID);
+
+        """
+        return dJointGetPUAngle1Rate(self.jid)
+
+
+    # dReal dJointGetPUAngle2Rate (dJointID);
+    def getAngle2Rate(self):
+        """
+        getAngle2Rate() -> float
+
+        This is a wrapper for the following ODE function:
+
+        dReal dJointGetPUAngle2Rate (dJointID);
+
+        """
+        return dJointGetPUAngle2Rate(self.jid)
+
+    # getPosition
+    def getPosition(self):
+        """getPosition() -> float
+
+        Get the PU linear position (i.e. the prismatic's extension).
+
+        When the anchor is set, the current position of body1 and the
+        anchor is examined and that position will be the zero position
+        (initial_offset) (i.e. dJointGetPUPosition with the body1
+        at that position with respect to the anchor will return 0.0).
+
+        The position is the "oriented" length between the body1 and
+        and the universal articulation (anchor).
+
+        position = { (Prismatic axis) dot_product [body1 - anchor] } - initial_offset
+
+        """
+        return dJointGetPUPosition(self.jid)
+
+    # getPositionRate
+    def getPositionRate(self):
+        """getPositionRate() -> float
+
+        Get the time derivative of the position.
+        """
+        return dJointGetPUPositionRate(self.jid)
