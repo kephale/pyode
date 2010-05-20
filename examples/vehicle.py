@@ -259,6 +259,7 @@ class VehicleDemo:
                                          pygame.OPENGL | pygame.DOUBLEBUF)
         pygame.display.set_caption('PyODE Vehicle Demo')
         pygame.mouse.set_visible(False)
+        glutInit()
 
         glViewport(0, 0, self.res[0], self.res[1])
         glClearColor(0.8, 0.8, 0.9, 0)
@@ -325,7 +326,7 @@ class VehicleDemo:
         glMaterialfv(GL_FRONT, GL_SPECULAR, (0.0, 1.0, 0.0))
 
         glBegin(GL_QUADS)
-        glColor3(0.0, 1.0, 0.0)
+        glColor3f(0.0, 1.0, 0.0)
         glNormal3f(*normal)
         glVertex3f(-self.clip, d, -self.clip)
         glNormal3f(*normal)

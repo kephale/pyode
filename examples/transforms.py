@@ -26,7 +26,7 @@
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
-from cgtypes import *
+from cgkit.cgtypes import *
 
 import pygame
 import math
@@ -187,6 +187,8 @@ passed, failed = pygame.init()
 
 # Open a window
 srf = pygame.display.set_mode((640,480), pygame.OPENGL | pygame.DOUBLEBUF)
+
+glutInit()
 
 root = xode.parser.Parser().parseString(doc)
 
