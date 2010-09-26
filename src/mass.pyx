@@ -101,7 +101,7 @@ cdef class Mass:
         @type total_mass: float
         @type radius: float
         """
-        dMassSetSphere(&self._mass, total_mass, radius)
+        dMassSetSphereTotal(&self._mass, total_mass, radius)
 
     def setCappedCylinder(self, density, direction, r, h):
         """setCappedCylinder(density, direction, r, h)
