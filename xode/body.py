@@ -1,3 +1,5 @@
+#@PydevCodeAnalysisIgnore
+
 ######################################################################
 # Python Open Dynamics Engine Wrapper
 # Copyright (C) 2004 PyODE developers (see file AUTHORS)
@@ -203,6 +205,16 @@ class Mass(node.TreeNode):
                 lz = float(attrs['sizez'])
                 if (density is not None):
                     mass.setBox(float(density), lx, ly, lz)
+            elif (name == 'cappedCylinder'):
+                radius = float(attrs.get('radius', 1.0))
+                length = float(attrs['length'])
+                if (density is not None):
+                    mass.setCappedCylinder(float(density), 3, radius, length)
+            elif (name == 'cylinder'):
+                radius = float(attrs.get('radius', 1.0))
+                length = float(attrs['length'])
+                if (density is not None):
+                    mass.setCylinder(float(density), 3, radius, length)
             else:
                 # FIXME: Implement remaining mass shapes.
                 raise NotImplementedError()

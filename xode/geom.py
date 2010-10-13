@@ -1,3 +1,5 @@
+#@PydevCodeAnalysisIgnore
+
 ######################################################################
 # Python Open Dynamics Engine Wrapper
 # Copyright (C) 2004 PyODE developers (see file AUTHORS)
@@ -16,7 +18,7 @@
 # This library is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the files
-# LICENSE and LICENSE-BSD for more details. 
+# LICENSE and LICENSE-BSD for more details.
 ######################################################################
 
 # XODE Importer for PyODE
@@ -69,7 +71,7 @@ class Geom(node.TreeNode):
         elif (name == 'cone'):
             raise NotImplementedError()
         elif (name == 'cylinder'):
-            raise NotImplementedError()
+            self._parseGeomCylinder(attrs)
         elif (name == 'plane'):
             self._parseGeomPlane(attrs)
         elif (name == 'ray'):
@@ -179,6 +181,23 @@ class Geom(node.TreeNode):
         self._setObject(ode.GeomCCylinder, radius=radius, length=length)
         self._parser.push(startElement=start, endElement=end)
 
+    def _parseGeomCylinder(self, attrs):
+        def start(name, attrs):
+            if (name == 'ext'):
+                pass
+            else:
+                raise errors.ChildError('cylinder', name)
+
+        def end(name):
+            if (name == 'cylinder'):
+                self._parser.pop()
+
+        radius = float(attrs['radius'])
+        length = float(attrs['length'])
+
+        self._setObject(ode.GeomCylinder, radius=radius, length=length)
+        self._parser.push(startElement=start, endElement=end)
+
     def _parseGeomSphere(self, attrs):
         def start(name, attrs):
             if (name == 'ext'):
@@ -242,7 +261,7 @@ class Geom(node.TreeNode):
             elif (name == 'v'):
                 vertices.append(self._parser.parseVector(attrs))
             elif (name == 't'):
-                tri = int(attrs['ia'])-1, int(attrs['ib'])-1, int(attrs['ic'])-1
+                tri = int(attrs['ia']) - 1, int(attrs['ib']) - 1, int(attrs['ic']) - 1
                 triangles.append(tri)
             else:
                 raise errors.ChildError('trimesh', name)
