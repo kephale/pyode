@@ -56,7 +56,7 @@ cdef class Body:
         self.userattribs = {}
 
     def __dealloc__(self):
-        if self.bid!=NULL:
+        if self.bid!=NULL and self.world:
             dBodyDestroy(self.bid)
 
     def __getattr__(self, name):

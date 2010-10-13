@@ -186,7 +186,7 @@ cdef class Joint:
 
     def __dealloc__(self):
         self.setFeedback(False)
-        if self.jid!=NULL:
+        if self.jid!=NULL and self.world:
             dJointDestroy(self.jid)
 
     def __getattr__(self, name):
